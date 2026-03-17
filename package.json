@@ -1,0 +1,20 @@
+{
+  "name": "my-pos",
+  "version": "1.0.0",
+  "description": "A comprehensive, full-stack Point of Sale (POS) and Inventory Management solution designed for retail businesses. The system uniquely supports an **Offline-First** architecture, allowing seamless billing without internet connectivity, and automatically syncs data to a secure Cloud MySQL database once back online.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "mysql2": "^3.20.0"
+  }
+}
