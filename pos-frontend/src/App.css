@@ -1,0 +1,322 @@
+/* =========================================================
+   NexPOS - Modern UI/UX Design (Orange & White Theme)
+========================================================= */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  background-color: #f4f7f6;
+  /* ලා අළු පසුබිම */
+  color: #2c3e50;
+  overflow: hidden;
+  /* Main window scroll වීම නවත්වයි */
+}
+
+/* --- Main Layout Layout (CSS Grid) --- */
+.app {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  /* වම් පැත්ත විශාලයි, Cart එකට 400px */
+  grid-template-rows: auto auto 1fr;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* ================= HEADER ================= */
+.header {
+  grid-column: 1 / 2;
+  grid-row: 1 / 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 30px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #eef2f5;
+}
+
+.header h1 {
+  font-size: 1.8rem;
+  color: #ff6a00;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.header input {
+  padding: 12px 20px;
+  border: 1.5px solid #e0e6ed;
+  border-radius: 25px;
+  font-size: 0.95rem;
+  width: 280px;
+  outline: none;
+  transition: all 0.3s ease;
+  background-color: #f8fafc;
+}
+
+.header input:focus {
+  border-color: #ff6a00;
+  box-shadow: 0 0 0 3px rgba(255, 106, 0, 0.1);
+  background-color: #ffffff;
+}
+
+/* ================= CATEGORIES ================= */
+.categories {
+  grid-column: 1 / 2;
+  grid-row: 2 / 3;
+  display: flex;
+  gap: 12px;
+  padding: 15px 30px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #eef2f5;
+  overflow-x: auto;
+}
+
+.categories button {
+  padding: 10px 24px;
+  border: 1px solid #dcdfe6;
+  border-radius: 30px;
+  background-color: #ffffff;
+  color: #5c6bc0;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.categories button:hover {
+  border-color: #ff6a00;
+  color: #ff6a00;
+  background-color: #fffaf7;
+}
+
+.categories button.active {
+  background-color: #ff6a00;
+  color: #ffffff;
+  border-color: #ff6a00;
+  box-shadow: 0 4px 10px rgba(255, 106, 0, 0.2);
+}
+
+/* ================= PRODUCTS GRID ================= */
+.products {
+  grid-column: 1 / 2;
+  grid-row: 3 / 4;
+  padding: 25px 30px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  overflow-y: auto;
+  /* බඩු ගොඩක් තිබ්බොත් මේ කොටස විතරක් scroll වේ */
+  align-content: start;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #edf2f7;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 140px;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.04);
+  border-color: #ff6a00;
+}
+
+.card h3 {
+  font-size: 1.05rem;
+  color: #2d3748;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+.card p {
+  font-size: 0.8rem;
+  color: #a0aec0;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+.card strong {
+  font-size: 1.25rem;
+  color: #ff6a00;
+  font-weight: 700;
+}
+
+/* ================= CART SECTION ================= */
+.cart {
+  grid-column: 2 / 3;
+  grid-row: 1 / 4;
+  background-color: #ffffff;
+  border-left: 1px solid #eef2f5;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 15px rgba(0, 0, 0, 0.02);
+  z-index: 10;
+}
+
+.cart h2 {
+  padding: 25px 30px 20px;
+  font-size: 1.4rem;
+  color: #1a202c;
+  border-bottom: 1px solid #eef2f5;
+}
+
+/* Cart Items List */
+.cart-item {
+  display: grid;
+  grid-template-columns: 2fr auto auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 30px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.cart-item p {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #2d3748;
+}
+
+.cart-item button {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e0;
+  background: #ffffff;
+  color: #4a5568;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cart-item button:hover {
+  background: #edf2f7;
+  color: #1a202c;
+}
+
+.cart-item span {
+  font-weight: 700;
+  color: #ff6a00;
+  font-size: 1rem;
+  text-align: right;
+  min-width: 60px;
+}
+
+.cart-item button:last-child {
+  border: none;
+  background: #fff5f5;
+  color: #e53e3e;
+}
+
+.cart-item button:last-child:hover {
+  background: #fed7d7;
+}
+
+/* Cart Summary & Actions */
+.cart hr {
+  margin: 10px 30px;
+  border: 0;
+  border-top: 1px solid #eef2f5;
+}
+
+.cart>p {
+  padding: 4px 30px;
+  display: flex;
+  justify-content: space-between;
+  color: #718096;
+  font-size: 0.95rem;
+}
+
+.cart h3 {
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.4rem;
+  color: #1a202c;
+  background-color: #f8fafc;
+  margin-top: 10px;
+}
+
+.cart input[type="number"] {
+  margin: 20px 30px 10px;
+  padding: 15px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  outline: none;
+  transition: 0.2s;
+}
+
+.cart input[type="number"]:focus {
+  border-color: #4299e1;
+}
+
+.cart>button {
+  margin: 10px 30px;
+  padding: 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.1s ease, background-color 0.2s ease;
+}
+
+.cart>button:nth-last-of-type(2) {
+  background-color: #ff6a00;
+  color: white;
+  margin-top: 15px;
+}
+
+.cart>button:nth-last-of-type(2):hover:not(:disabled) {
+  background-color: #e65c00;
+  transform: scale(1.02);
+}
+
+.cart>button:nth-last-of-type(2):disabled {
+  background-color: #cbd5e0;
+  cursor: not-allowed;
+}
+
+.cart>button:last-child {
+  background-color: #edf2f7;
+  color: #4a5568;
+  margin-bottom: 30px;
+}
+
+.cart>button:last-child:hover {
+  background-color: #e2e8f0;
+}
+
+/* Scrollbar Styling for a premium feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
