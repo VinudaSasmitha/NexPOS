@@ -1,1477 +1,1262 @@
-.
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Vinuda Sasmitha | Software Engineer Portfolio</title>
-    <meta name="description"
-        content="Portfolio of Vinuda Sasmitha, an Aspiring Software Engineer specializing in Full Stack Development, DevOps, and UI/UX Design.">
-    <meta name="keywords"
-        content="Vinuda Sasmitha, Software Engineer, Web Developer, Portfolio, Sri Lanka, IIT, Westminster, Full Stack, Python, Java">
-    <meta name="author" content="Vinuda Sasmitha">
-
-    <meta property="og:title" content="Vinuda Sasmitha - Portfolio">
-    <meta property="og:description" content="Aspiring Software Engineer & Full Stack Developer.">
-    <meta property="og:image" content="assets/preview.png">
-    <link rel="icon" type="image/png" href="assets/favicon.png">
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    <title>Smart Exchange | POS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="global.css">
     <style>
-        /* --- THEME VARIABLES --- */
         :root {
-            --primary: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg-body: #f8fafc;
-            --bg-card: #ffffff;
-            --text-main: #0f172a;
-            --text-sub: #475569;
-            --border: #e2e8f0;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --gradient: linear-gradient(135deg, #4f46e5 0%, #a855f7 100%);
-            --badge-bg: #e0e7ff;
-            --badge-text: #4338ca;
-            --input-bg: #f1f5f9;
-        }
-
-        [data-theme="dark"] {
             --primary: #6366f1;
-            --bg-body: #0f172a;
-            --bg-card: #1e293b;
-            --text-main: #f1f5f9;
-            --text-sub: #cbd5e1;
-            --border: #334155;
-            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-            --gradient: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
-            --badge-bg: #312e81;
-            --badge-text: #c7d2fe;
-            --input-bg: #334155;
-        }
-
-        /* --- GLOBAL STYLES --- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        /* ✅ Performance: Respect User Motion Preferences */
-        @media (prefers-reduced-motion: reduce) {
-            * {
-                animation: none !important;
-                transition: none !important;
-                scroll-behavior: auto !important;
-            }
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+            --radius: 12px;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-body);
+            background-color: var(--bg);
             color: var(--text-main);
-            transition: background 0.3s, color 0.3s;
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        section {
-            padding: 80px 20px;
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
-        a {
-            text-decoration: none;
-            transition: 0.3s;
-        }
-
-        ul {
-            list-style: none;
-        }
-
-        :focus-visible {
-            outline: 2px solid var(--primary);
-            outline-offset: 2px;
-        }
-
-        /* --- NAVIGATION --- */
-        nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            transition: background 0.3s;
-        }
-
-        [data-theme="dark"] nav {
-            background: rgba(15, 23, 42, 0.85);
-        }
-
-        .nav-container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: var(--primary);
-            letter-spacing: -0.5px;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 30px;
-            align-items: center;
-        }
-
-        .nav-links a {
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--text-main);
-            position: relative;
-        }
-
-        .nav-links a:hover {
-            color: var(--primary);
-        }
-
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -4px;
-            left: 0;
-            background-color: var(--primary);
-            transition: width 0.3s;
-        }
-
-        .nav-links a:hover::after {
-            width: 100%;
-        }
-
-        .hamburger {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--text-main);
-            cursor: pointer;
-        }
-
-        .theme-toggle {
-            cursor: pointer;
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            color: var(--text-main);
-            transition: transform 0.3s;
-        }
-
-        .theme-toggle:hover {
-            transform: rotate(15deg);
-        }
-
-        @media (max-width: 768px) {
-            .hamburger {
-                display: block;
-            }
-
-            .nav-links {
-                position: absolute;
-                top: 100%;
-                left: 0;
-                width: 100%;
-                background: var(--bg-card);
-                flex-direction: column;
-                padding: 20px 0;
-                border-bottom: 1px solid var(--border);
-                box-shadow: var(--shadow);
-                display: none;
-            }
-
-            .nav-links.active {
-                display: flex;
-            }
-        }
-
-        /* --- HERO SECTION --- */
-        .hero {
-            min-height: 100vh;
+            margin: 0;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding-top: 80px;
-            position: relative;
             overflow: hidden;
         }
 
-        /* Magic Stars */
-        .magic-star {
-            position: absolute;
-            color: var(--primary);
-            opacity: 0.3;
-            animation: floatStar 10s infinite linear;
-            z-index: -1;
-        }
-
-        .magic-star:nth-child(1) {
-            top: 20%;
-            left: 10%;
-            font-size: 1.5rem;
-            animation-duration: 12s;
-        }
-
-        .magic-star:nth-child(2) {
-            top: 60%;
-            right: 15%;
-            font-size: 1rem;
-            animation-duration: 15s;
-            animation-delay: 2s;
-        }
-
-        .magic-star:nth-child(3) {
-            top: 80%;
-            left: 20%;
-            font-size: 2rem;
-            animation-duration: 18s;
-            animation-delay: 1s;
-        }
-
-        .magic-star:nth-child(4) {
-            top: 15%;
-            right: 25%;
-            font-size: 1.2rem;
-            animation-duration: 20s;
-        }
-
-        @keyframes floatStar {
-            0% {
-                transform: translateY(0) rotate(0deg);
-                opacity: 0.3;
-            }
-
-            50% {
-                transform: translateY(-20px) rotate(180deg);
-                opacity: 0.6;
-            }
-
-            100% {
-                transform: translateY(0) rotate(360deg);
-                opacity: 0.3;
-            }
-        }
-
-        /* Profile Icon Drawing Animation */
-        .profile-container {
-            width: 180px;
-            height: 180px;
-            margin-bottom: 25px;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .profile-svg {
-            width: 100%;
-            height: 100%;
-            stroke: var(--primary);
-            stroke-width: 2;
-            fill: none;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            animation: fillProfile 1s ease-in-out 3s forwards;
-        }
-
-        .profile-svg path {
-            stroke-dasharray: 1000;
-            stroke-dashoffset: 1000;
-            animation: drawProfile 3s ease-in-out forwards;
-        }
-
-        @keyframes drawProfile {
-            to {
-                stroke-dashoffset: 0;
-            }
-        }
-
-        @keyframes fillProfile {
-            to {
-                fill: rgba(79, 70, 229, 0.1);
-            }
-        }
-
-        /* Typography */
-        .hero h1 {
-            font-size: clamp(2.5rem, 5vw, 4.5rem);
-            font-weight: 800;
-            margin-bottom: 10px;
-            letter-spacing: -1px;
-            line-height: 1.1;
-        }
-
-        .hero h1 span {
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .hero-subtitle {
-            font-size: clamp(1.1rem, 2vw, 1.5rem);
-            color: var(--text-sub);
-            margin-bottom: 25px;
-            font-weight: 500;
-            min-height: 1.5em;
-        }
-
-        .typing-text {
-            color: var(--text-main);
-            font-weight: 700;
-            border-bottom: 2px solid var(--primary);
-        }
-
-        /* About Toggle */
-        .about-toggle-btn {
-            background: none;
-            border: none;
-            color: var(--primary);
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 1rem;
-            margin-bottom: 15px;
+        /* --- Header --- */
+        .navbar {
+            background: var(--card-bg);
+            padding: 0 24px;
+            height: 60px;
             display: flex;
             align-items: center;
-            gap: 8px;
-        }
-
-        .about-toggle-btn:hover {
-            text-decoration: underline;
-        }
-
-        .about-content-wrapper {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.6s ease, opacity 0.5s ease;
-            opacity: 0;
-            max-width: 700px;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .about-content-wrapper.open {
-            max-height: 600px;
-            opacity: 1;
-            margin-bottom: 30px;
-        }
-
-        .hero-description {
-            color: var(--text-sub);
-            font-size: 1rem;
-            line-height: 1.8;
-            padding: 10px;
-        }
-
-        /* Buttons */
-        .btn-group {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-top: 10px;
-        }
-
-        .btn {
-            padding: 12px 28px;
-            border-radius: 50px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: 0.3s;
-            cursor: pointer;
-            border: none;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.3);
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
-        }
-
-        .btn-outline {
-            border: 2px solid var(--border);
-            color: var(--text-main);
-            background: transparent;
-        }
-
-        .btn-outline:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        /* --- SKILLS SECTION --- */
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-        }
-
-        .skill-bar {
-            width: 100%;
-            height: 8px;
-            background: var(--border);
-            border-radius: 10px;
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-
-        .skill-bar span {
-            display: block;
-            height: 100%;
-            background: var(--primary);
-            border-radius: 10px;
-            width: 0;
-            transition: width 1.5s ease-out;
-        }
-
-        .skill-label {
-            display: flex;
             justify-content: space-between;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 5px;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
-        /* Soft Skills Tags */
-        .soft-skills-container {
+        .brand {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--primary-dark);
             display: flex;
-            flex-wrap: wrap;
+            align-items: center;
             gap: 10px;
         }
 
-        .soft-skill-tag {
-            background: var(--bg-body);
-            border: 1px solid var(--border);
+        .btn-back {
+            background: #f3f4f6;
+            color: var(--text-main);
+            border: none;
             padding: 8px 16px;
-            border-radius: 25px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--text-sub);
-            transition: 0.3s;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-back:hover {
+            background: #e5e7eb;
+        }
+
+        /* --- Main Grid --- */
+        .container {
+            flex: 1;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .card-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fafafa;
+        }
+
+        .card-title {
+            font-weight: 700;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .soft-skill-tag:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-            transform: translateY(-3px);
-            box-shadow: var(--shadow);
-        }
-
-        .soft-skill-tag i {
-            color: var(--primary);
-        }
-
-        /* --- PROJECTS SECTION --- */
-        .project-card {
-            background: var(--bg-card);
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            transition: 0.4s;
-            overflow: hidden;
-            height: 100%;
-        }
-
-        .project-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow);
-            border-color: var(--primary);
-        }
-
-        .project-content {
-            padding: 25px;
-            flex-grow: 1;
-        }
-
-        .project-details ul {
-            padding-left: 18px;
-            color: var(--text-sub);
-            margin-bottom: 20px;
-            list-style-type: disc;
-        }
-
-        .project-details li {
-            margin-bottom: 8px;
-            font-size: 0.95rem;
-        }
-
-        .tech-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 15px;
-        }
-
-        .tech-badge {
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 4px 10px;
+        .badge {
+            padding: 4px 12px;
             border-radius: 20px;
-            background-color: var(--badge-bg);
-            color: var(--badge-text);
-            transition: 0.3s;
+            font-size: 0.85rem;
+            font-weight: 700;
         }
 
-        .tech-badge:hover {
-            transform: scale(1.05);
-            background-color: var(--primary);
+        .badge-red {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+
+        .badge-green {
+            background: #d1fae5;
+            color: var(--success);
+        }
+
+        /* --- Search Area --- */
+        .search-area {
+            padding: 15px;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 10px 10px 36px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-action {
+            padding: 0 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
             color: white;
         }
 
-        .learned-text {
-            font-size: 0.85rem;
-            margin-top: 15px;
-            color: var(--text-sub);
-            font-style: italic;
-            border-left: 2px solid var(--primary);
-            padding-left: 10px;
+        .btn-find {
+            background: var(--primary);
         }
 
-        .project-links {
-            padding: 20px 25px;
-            border-top: 1px solid var(--border);
-            display: flex;
-            gap: 15px;
-            margin-top: auto;
+        .btn-add {
+            background: var(--success);
         }
 
-        .link-item {
+        /* --- Tables --- */
+        .table-container {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
             font-size: 0.9rem;
+        }
+
+        th {
+            background: #f9fafb;
+            color: var(--text-light);
             font-weight: 600;
-            color: var(--text-main);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            padding: 12px 16px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        /* Highlight for Keyboard Navigation */
+        tr.kb-selected {
+            background-color: #e0e7ff;
+            border-left: 4px solid var(--primary);
+        }
+
+        tr.active-row {
+            background-color: #fff1f2;
+        }
+
+        /* Items selected for return */
+
+        .checkbox-wrapper input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--danger);
+        }
+
+        .qty-btn {
+            background: #f3f4f6;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 2px 8px;
+            cursor: pointer;
+        }
+
+        .qty-btn:hover {
+            background: #e5e7eb;
+        }
+
+        /* --- Bottom Bar --- */
+        .bottom-bar {
+            background: white;
+            border-top: 1px solid var(--border);
+            padding: 15px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .summary-group {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .sum-item label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .sum-item span {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .sum-item.negative span {
+            color: var(--danger);
+        }
+
+        .sum-item.positive span {
+            color: var(--success);
+        }
+
+        .btn-checkout {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
             display: flex;
             align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-checkout:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* --- MODAL (POPUP) STYLES --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-content {
+            background: white;
+            width: 600px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            animation: popIn 0.3s ease;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 30px;
+            display: grid;
+            gap: 20px;
+        }
+
+        .pay-summary {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 10px;
+            border: 1px solid #eee;
+        }
+
+        .pay-row {
+            text-align: center;
+        }
+
+        .pay-row label {
+            font-size: 0.8rem;
+            color: #666;
+            font-weight: bold;
+            display: block;
+        }
+
+        .pay-row span {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #333;
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .p-method {
+            border: 2px solid #eee;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        .p-method:hover {
+            background: #f0f7ff;
+            border-color: var(--primary);
+        }
+
+        .p-method.active {
+            background: #e0e7ff;
+            border-color: var(--primary);
+            color: var(--primary-dark);
+            font-weight: bold;
+        }
+
+        .p-method i {
+            display: block;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .pay-input-group {
+            display: flex;
+            flex-direction: column;
             gap: 5px;
         }
 
-        .link-item:hover {
-            color: var(--primary);
-        }
-
-        /* --- CONTACT & UTILS --- */
-        .contact-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 40px;
-        }
-
-        .contact-form {
-            background: var(--bg-card);
-            padding: 30px;
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .form-input,
-        .form-textarea {
-            width: 100%;
-            padding: 12px;
+        .pay-input {
+            font-size: 2rem;
+            padding: 10px;
+            text-align: right;
+            border: 2px solid #ddd;
             border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--input-bg);
-            color: var(--text-main);
-            font-family: inherit;
-            font-size: 1rem;
-            transition: 0.3s;
+            width: 100%;
+            box-sizing: border-box;
         }
 
-        .form-input:focus,
-        .form-textarea:focus {
-            border-color: var(--primary);
+        .pay-input:focus {
+            border-color: var(--success);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
 
-        .form-textarea {
-            resize: vertical;
-            min-height: 120px;
-        }
-
-        .scroll-top {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: var(--primary);
-            color: white;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .balance-display {
+            text-align: right;
+            margin-top: 10px;
             font-size: 1.2rem;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            opacity: 0;
-            pointer-events: none;
-            transition: 0.3s;
-            z-index: 999;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            background: #f9fafb;
+            text-align: right;
+            border-top: 1px solid #eee;
+        }
+
+        .btn-print {
+            background: var(--success);
+            color: white;
+            padding: 15px 40px;
             border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
         }
 
-        .scroll-top.active {
-            opacity: 1;
-            pointer-events: all;
-            transform: translateY(0);
+        .btn-print:disabled {
+            background: #ccc;
         }
 
-        .scroll-top:hover {
-            background: var(--primary-hover);
-            transform: translateY(-3px);
+        /* Print Style */
+        /* --- PRINT STYLES --- */
+        /* --- PRINT STYLES FOR 56MM/58MM --- */
+        @media print {
+
+            /* තිරයේ ඇති අනිත් දේවල් හංගන්න */
+            body * {
+                visibility: hidden;
+            }
+
+            /* Print Area එක විතරක් පෙන්වන්න */
+            #print-area,
+            #print-area * {
+                visibility: visible;
+            }
+
+            /* 56mm/58mm Size සැකසුම */
+            #print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 58mm;
+                /* 58mm තියන්න, එතකොට 56mm රෝල් එකට ගානට වදී */
+                padding: 0;
+                margin: 0;
+                background: white;
+            }
+
+            @page {
+                margin: 0;
+                size: auto;
+            }
         }
 
-        .hidden {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s ease-out;
+        /* Screen එකේදී මේක පේන්නෙ නෑ */
+        #print-area {
+            display: none;
         }
 
-        .show {
-            opacity: 1;
-            transform: translateY(0);
+        @media print {
+            #print-area {
+                display: block;
+            }
         }
 
-        footer {
-            text-align: center;
-            padding: 40px;
-            border-top: 1px solid var(--border);
-            color: var(--text-sub);
-            margin-top: 40px;
-            font-size: 0.9rem;
+        /* Screen එකේදී Print Area එක හංගන්න */
+        #print-area {
+            display: none;
+        }
+
+        /* Printing වෙද්දී විතරක් එය Block කරන්න */
+        @media print {
+            #print-area {
+                display: block;
+            }
         }
     </style>
 </head>
 
 <body>
 
-    <nav>
-        <div class="nav-container">
-            <div class="logo">Vinuda.dev</div>
-            <button class="hamburger" id="hamburger" aria-label="Toggle Navigation"><i class="fas fa-bars"></i></button>
-            <div class="nav-links" id="nav-links">
-                <a href="#about" class="nav-link">About</a>
-                <a href="#skills" class="nav-link">Skills</a>
-                <a href="#projects" class="nav-link">Projects</a>
-                <a href="#contact" class="nav-link">Contact</a>
-                <button class="theme-toggle" id="theme-btn" aria-label="Toggle Theme"><i
-                        class="fas fa-desktop"></i></button>
+    <nav class="navbar">
+        <div class="brand">
+            <div style="background:var(--primary); color:white; padding:6px; border-radius:8px;">
+                <i class="fas fa-sync-alt"></i>
             </div>
+            Smart Exchange System
         </div>
+        <button class="btn-back" onclick="location.reload()">
+            <i class="fas fa-redo"></i> Reset / New
+        </button>
     </nav>
 
-    <section class="hero hidden" id="about">
-        <i class="fas fa-star magic-star"></i>
-        <i class="fas fa-code magic-star"></i>
-        <i class="fas fa-star magic-star"></i>
-        <i class="fas fa-laptop-code magic-star"></i>
-
-        <div class="profile-container">
-            <svg class="profile-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                    d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 5C13.66 5 15 6.34 15 8C15 9.66 13.66 11 12 11C10.34 11 9 9.66 9 8C9 6.34 10.34 5 12 5ZM12 19.2C9.5 19.2 7.29 17.92 6 15.98C6.03 13.99 10 12.9 12 12.9C13.99 12.9 17.97 13.99 18 15.98C16.71 17.92 14.5 19.2 12 19.2Z" />
-            </svg>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-undo-alt" style="color:var(--danger)"></i> RETURN Items
+                </div>
+                <div class="badge badge-red" id="lbl-return-total">Credit: 0.00</div>
+            </div>
+            <div class="search-area">
+                <div class="input-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="invInput" class="form-input"
+                        placeholder="Enter Invoice No (e.g. INV-XXXX)..." onkeydown="handleInvInput(event)">
+                    <button class="btn-action btn-find" onclick="findInvoice()">Find</button>
+                </div>
+                <small style="color:#666; margin-top:5px; display:block;">* Use Arrow Keys (↓ ↑) to select items, Space
+                    to check.</small>
+            </div>
+            <div class="table-container">
+                <table id="returnTable">
+                    <thead>
+                        <tr>
+                            <th width="40">Use</th>
+                            <th>Item</th>
+                            <th>Sold Price</th>
+                            <th>Qty</th>
+                            <th align="right">Return Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="returnTbody">
+                        <tr>
+                            <td colspan="5" style="text-align:center; color:#999; padding:20px;">Load an invoice to
+                                start</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <h1>Hi, I'm <span>Vinuda Sasmitha</span></h1>
-
-        <p class="hero-subtitle">
-            I am a <span class="typing-text"></span>
-        </p>
-
-        <button class="about-toggle-btn" id="aboutToggle">More About Me <i class="fas fa-chevron-down"></i></button>
-
-        <div class="about-content-wrapper" id="aboutContent">
-            <!DOCTYPE html>
-            <html lang="en">
-
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-                <title>Vinuda Sasmitha | Software Engineer Portfolio</title>
-                <meta name="description"
-                    content="Portfolio of Vinuda Sasmitha, an Aspiring Software Engineer specializing in Full Stack Development, DevOps, and UI/UX Design.">
-                <meta name="keywords"
-                    content="Vinuda Sasmitha, Software Engineer, Web Developer, Portfolio, Sri Lanka, IIT, Westminster, Full Stack, Python, Java">
-                <meta name="author" content="Vinuda Sasmitha">
-
-                <meta property="og:title" content="Vinuda Sasmitha - Portfolio">
-                <meta property="og:description" content="Aspiring Software Engineer & Full Stack Developer.">
-                <meta property="og:image" content="assets/preview.png">
-                <link rel="icon" type="image/png" href="assets/favicon.png">
-
-                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-                    rel="stylesheet">
-                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-                <style>
-                    /* --- THEME VARIABLES --- */
-                    :root {
-                        --primary: #4f46e5;
-                        --primary-hover: #4338ca;
-                        --bg-body: #f8fafc;
-                        --bg-card: #ffffff;
-                        --text-main: #0f172a;
-                        --text-sub: #475569;
-                        --border: #e2e8f0;
-                        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-                        --gradient: linear-gradient(135deg, #4f46e5 0%, #a855f7 100%);
-                        --badge-bg: #e0e7ff;
-                        --badge-text: #4338ca;
-                        --input-bg: #f1f5f9;
-                    }
-
-                    [data-theme="dark"] {
-                        --primary: #6366f1;
-                        --bg-body: #0f172a;
-                        --bg-card: #1e293b;
-                        --text-main: #f1f5f9;
-                        --text-sub: #cbd5e1;
-                        --border: #334155;
-                        --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-                        --gradient: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
-                        --badge-bg: #312e81;
-                        --badge-text: #c7d2fe;
-                        --input-bg: #334155;
-                    }
-
-                    /* --- GLOBAL STYLES --- */
-                    * {
-                        margin: 0;
-                        padding: 0;
-                        box-sizing: border-box;
-                    }
-
-                    html {
-                        scroll-behavior: smooth;
-                    }
-
-                    /* ✅ Performance: Respect User Motion Preferences */
-                    @media (prefers-reduced-motion: reduce) {
-                        * {
-                            animation: none !important;
-                            transition: none !important;
-                            scroll-behavior: auto !important;
-                        }
-                    }
-
-                    body {
-                        font-family: 'Inter', sans-serif;
-                        background-color: var(--bg-body);
-                        color: var(--text-main);
-                        transition: background 0.3s, color 0.3s;
-                        line-height: 1.6;
-                        overflow-x: hidden;
-                    }
-
-                    section {
-                        padding: 80px 20px;
-                        max-width: 1100px;
-                        margin: 0 auto;
-                    }
-
-                    a {
-                        text-decoration: none;
-                        transition: 0.3s;
-                    }
-
-                    ul {
-                        list-style: none;
-                    }
-
-                    :focus-visible {
-                        outline: 2px solid var(--primary);
-                        outline-offset: 2px;
-                    }
-
-                    /* --- NAVIGATION --- */
-                    nav {
-                        position: fixed;
-                        top: 0;
-                        width: 100%;
-                        z-index: 1000;
-                        background: rgba(255, 255, 255, 0.85);
-                        backdrop-filter: blur(12px);
-                        border-bottom: 1px solid var(--border);
-                        transition: background 0.3s;
-                    }
-
-                    [data-theme="dark"] nav {
-                        background: rgba(15, 23, 42, 0.85);
-                    }
-
-                    .nav-container {
-                        max-width: 1100px;
-                        margin: 0 auto;
-                        padding: 15px 20px;
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                    }
-
-                    .logo {
-                        font-size: 1.4rem;
-                        font-weight: 800;
-                        color: var(--primary);
-                        letter-spacing: -0.5px;
-                    }
-
-                    .nav-links {
-                        display: flex;
-                        gap: 30px;
-                        align-items: center;
-                    }
-
-                    .nav-links a {
-                        font-size: 0.9rem;
-                        font-weight: 500;
-                        color: var(--text-main);
-                        position: relative;
-                    }
-
-                    .nav-links a:hover {
-                        color: var(--primary);
-                    }
-
-                    .nav-links a::after {
-                        content: '';
-                        position: absolute;
-                        width: 0;
-                        height: 2px;
-                        bottom: -4px;
-                        left: 0;
-                        background-color: var(--primary);
-                        transition: width 0.3s;
-                    }
-
-                    .nav-links a:hover::after {
-                        width: 100%;
-                    }
-
-                    .hamburger {
-                        display: none;
-                        background: none;
-                        border: none;
-                        font-size: 1.5rem;
-                        color: var(--text-main);
-                        cursor: pointer;
-                    }
-
-                    .theme-toggle {
-                        cursor: pointer;
-                        background: none;
-                        border: none;
-                        font-size: 1.2rem;
-                        color: var(--text-main);
-                        transition: transform 0.3s;
-                    }
-
-                    .theme-toggle:hover {
-                        transform: rotate(15deg);
-                    }
-
-                    @media (max-width: 768px) {
-                        .hamburger {
-                            display: block;
-                        }
-
-                        .nav-links {
-                            position: absolute;
-                            top: 100%;
-                            left: 0;
-                            width: 100%;
-                            background: var(--bg-card);
-                            flex-direction: column;
-                            padding: 20px 0;
-                            border-bottom: 1px solid var(--border);
-                            box-shadow: var(--shadow);
-                            display: none;
-                        }
-
-                        .nav-links.active {
-                            display: flex;
-                        }
-                    }
-
-                    /* --- HERO SECTION --- */
-                    .hero {
-                        min-height: 100vh;
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        justify-content: center;
-                        text-align: center;
-                        padding-top: 80px;
-                        position: relative;
-                        overflow: hidden;
-                    }
-
-                    /* Magic Stars */
-                    .magic-star {
-                        position: absolute;
-                        color: var(--primary);
-                        opacity: 0.3;
-                        animation: floatStar 10s infinite linear;
-                        z-index: -1;
-                    }
-
-                    .magic-star:nth-child(1) {
-                        top: 20%;
-                        left: 10%;
-                        font-size: 1.5rem;
-                        animation-duration: 12s;
-                    }
-
-                    .magic-star:nth-child(2) {
-                        top: 60%;
-                        right: 15%;
-                        font-size: 1rem;
-                        animation-duration: 15s;
-                        animation-delay: 2s;
-                    }
-
-                    .magic-star:nth-child(3) {
-                        top: 80%;
-                        left: 20%;
-                        font-size: 2rem;
-                        animation-duration: 18s;
-                        animation-delay: 1s;
-                    }
-
-                    .magic-star:nth-child(4) {
-                        top: 15%;
-                        right: 25%;
-                        font-size: 1.2rem;
-                        animation-duration: 20s;
-                    }
-
-                    @keyframes floatStar {
-                        0% {
-                            transform: translateY(0) rotate(0deg);
-                            opacity: 0.3;
-                        }
-
-                        50% {
-                            transform: translateY(-20px) rotate(180deg);
-                            opacity: 0.6;
-                        }
-
-                        100% {
-                            transform: translateY(0) rotate(360deg);
-                            opacity: 0.3;
-                        }
-                    }
-
-                    /* Profile Icon Drawing Animation */
-                    .profile-container {
-                        width: 180px;
-                        height: 180px;
-                        margin-bottom: 25px;
-                        position: relative;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                    }
-
-                    .profile-svg {
-                        width: 100%;
-                        height: 100%;
-                        stroke: var(--primary);
-                        stroke-width: 2;
-                        fill: none;
-                        stroke-linecap: round;
-                        stroke-linejoin: round;
-                        animation: fillProfile 1s ease-in-out 3s forwards;
-                    }
-
-                    .profile-svg path {
-                        stroke-dasharray: 1000;
-                        stroke-dashoffset: 1000;
-                        animation: drawProfile 3s ease-in-out forwards;
-                    }
-
-                    @keyframes drawProfile {
-                        to {
-                            stroke-dashoffset: 0;
-                        }
-                    }
-
-                    @keyframes fillProfile {
-                        to {
-                            fill: rgba(79, 70, 229, 0.1);
-                        }
-                    }
-
-                    /* Typography */
-                    .hero h1 {
-                        font-size: clamp(2.5rem, 5vw, 4.5rem);
-                        font-weight: 800;
-                        margin-bottom: 10px;
-                        letter-spacing: -1px;
-                        line-height: 1.1;
-                    }
-
-                    .hero h1 span {
-                        background: var(--gradient);
-                        -webkit-background-clip: text;
-                        -webkit-text-fill-color: transparent;
-                    }
-
-                    .hero-subtitle {
-                        font-size: clamp(1.1rem, 2vw, 1.5rem);
-                        color: var(--text-sub);
-                        margin-bottom: 25px;
-                        font-weight: 500;
-                        min-height: 1.5em;
-                    }
-
-                    .typing-text {
-                        color: var(--text-main);
-                        font-weight: 700;
-                        border-bottom: 2px solid var(--primary);
-                    }
-
-                    /* About Toggle */
-                    .about-toggle-btn {
-                        background: none;
-                        border: none;
-                        color: var(--primary);
-                        font-weight: 600;
-                        cursor: pointer;
-                        font-size: 1rem;
-                        margin-bottom: 15px;
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                    }
-
-                    .about-toggle-btn:hover {
-                        text-decoration: underline;
-                    }
-
-                    .about-content-wrapper {
-                        max-height: 0;
-                        overflow: hidden;
-                        transition: max-height 0.6s ease, opacity 0.5s ease;
-                        opacity: 0;
-                        max-width: 700px;
-                        text-align: center;
-                        margin-bottom: 10px;
-                    }
-
-                    .about-content-wrapper.open {
-                        max-height: 600px;
-                        opacity: 1;
-                        margin-bottom: 30px;
-                    }
-
-                    .hero-description {
-                        color: var(--text-sub);
-                        font-size: 1rem;
-                        line-height: 1.8;
-                        padding: 10px;
-                    }
-
-                    /* Buttons */
-                    .btn-group {
-                        display: flex;
-                        gap: 15px;
-                        flex-wrap: wrap;
-                        justify-content: center;
-                        margin-top: 10px;
-                    }
-
-                    .btn {
-                        padding: 12px 28px;
-                        border-radius: 50px;
-                        font-weight: 600;
-                        display: inline-flex;
-                        align-items: center;
-                        gap: 8px;
-                        transition: 0.3s;
-                        cursor: pointer;
-                        border: none;
-                    }
-
-                    .btn-primary {
-                        background: var(--primary);
-                        color: white;
-                        box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.3);
-                    }
-
-                    .btn-primary:hover {
-                        background: var(--primary-hover);
-                        transform: translateY(-2px);
-                        box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
-                    }
-
-                    .btn-outline {
-                        border: 2px solid var(--border);
-                        color: var(--text-main);
-                        background: transparent;
-                    }
-
-                    .btn-outline:hover {
-                        border-color: var(--primary);
-                        color: var(--primary);
-                        transform: translateY(-2px);
-                    }
-
-                    /* --- SKILLS SECTION --- */
-                    .grid-container {
-                        display: grid;
-                        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                        gap: 30px;
-                    }
-
-                    .skill-bar {
-                        width: 100%;
-                        height: 8px;
-                        background: var(--border);
-                        border-radius: 10px;
-                        margin-bottom: 20px;
-                        overflow: hidden;
-                    }
-
-                    .skill-bar span {
-                        display: block;
-                        height: 100%;
-                        background: var(--primary);
-                        border-radius: 10px;
-                        width: 0;
-                        transition: width 1.5s ease-out;
-                    }
-
-                    .skill-label {
-                        display: flex;
-                        justify-content: space-between;
-                        font-size: 0.9rem;
-                        font-weight: 600;
-                        margin-bottom: 5px;
-                    }
-
-                    /* Soft Skills Tags */
-                    .soft-skills-container {
-                        display: flex;
-                        flex-wrap: wrap;
-                        gap: 10px;
-                    }
-
-                    .soft-skill-tag {
-                        background: var(--bg-body);
-                        border: 1px solid var(--border);
-                        padding: 8px 16px;
-                        border-radius: 25px;
-                        font-size: 0.9rem;
-                        font-weight: 500;
-                        color: var(--text-sub);
-                        transition: 0.3s;
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                    }
-
-                    .soft-skill-tag:hover {
-                        border-color: var(--primary);
-                        color: var(--primary);
-                        transform: translateY(-3px);
-                        box-shadow: var(--shadow);
-                    }
-
-                    .soft-skill-tag i {
-                        color: var(--primary);
-                    }
-
-                    /* --- PROJECTS SECTION --- */
-                    .project-card {
-                        background: var(--bg-card);
-                        border-radius: 16px;
-                        border: 1px solid var(--border);
-                        display: flex;
-                        flex-direction: column;
-                        transition: 0.4s;
-                        overflow: hidden;
-                        height: 100%;
-                    }
-
-                    .project-card:hover {
-                        transform: translateY(-5px);
-                        box-shadow: var(--shadow);
-                        border-color: var(--primary);
-                    }
-
-                    .project-content {
-                        padding: 25px;
-                        flex-grow: 1;
-                    }
-
-                    .project-details ul {
-                        padding-left: 18px;
-                        color: var(--text-sub);
-                        margin-bottom: 20px;
-                        list-style-type: disc;
-                    }
-
-                    .project-details li {
-                        margin-bottom: 8px;
-                        font-size: 0.95rem;
-                    }
-
-                    .tech-tags {
-                        display: flex;
-                        flex-wrap: wrap;
-                        gap: 8px;
-                        margin-top: 15px;
-                    }
-
-                    .tech-badge {
-                        font-size: 0.75rem;
-                        font-weight: 600;
-                        padding: 4px 10px;
-                        border-radius: 20px;
-                        background-color: var(--badge-bg);
-                        color: var(--badge-text);
-                        transition: 0.3s;
-                    }
-
-                    .tech-badge:hover {
-                        transform: scale(1.05);
-                        background-color: var(--primary);
-                        color: white;
-                    }
-
-                    .learned-text {
-                        font-size: 0.85rem;
-                        margin-top: 15px;
-                        color: var(--text-sub);
-                        font-style: italic;
-                        border-left: 2px solid var(--primary);
-                        padding-left: 10px;
-                    }
-
-                    .project-links {
-                        padding: 20px 25px;
-                        border-top: 1px solid var(--border);
-                        display: flex;
-                        gap: 15px;
-                        margin-top: auto;
-                    }
-
-                    .link-item {
-                        font-size: 0.9rem;
-                        font-weight: 600;
-                        color: var(--text-main);
-                        display: flex;
-                        align-items: center;
-                        gap: 5px;
-                    }
-
-                    .link-item:hover {
-                        color: var(--primary);
-                    }
-
-                    /* --- CONTACT & UTILS --- */
-                    .contact-container {
-                        display: grid;
-                        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                        gap: 40px;
-                    }
-
-                    .contact-form {
-                        background: var(--bg-card);
-                        padding: 30px;
-                        border-radius: 16px;
-                        border: 1px solid var(--border);
-                        box-shadow: var(--shadow);
-                    }
-
-                    .form-group {
-                        margin-bottom: 20px;
-                        text-align: left;
-                    }
-
-                    .form-label {
-                        display: block;
-                        margin-bottom: 8px;
-                        font-weight: 600;
-                        font-size: 0.9rem;
-                    }
-
-                    .form-input,
-                    .form-textarea {
-                        width: 100%;
-                        padding: 12px;
-                        border-radius: 8px;
-                        border: 1px solid var(--border);
-                        background: var(--input-bg);
-                        color: var(--text-main);
-                        font-family: inherit;
-                        font-size: 1rem;
-                        transition: 0.3s;
-                    }
-
-                    .form-input:focus,
-                    .form-textarea:focus {
-                        border-color: var(--primary);
-                        outline: none;
-                        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-                    }
-
-                    .form-textarea {
-                        resize: vertical;
-                        min-height: 120px;
-                    }
-
-                    .scroll-top {
-                        position: fixed;
-                        bottom: 30px;
-                        right: 30px;
-                        background: var(--primary);
-                        color: white;
-                        width: 45px;
-                        height: 45px;
-                        border-radius: 50%;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        font-size: 1.2rem;
-                        cursor: pointer;
-                        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-                        opacity: 0;
-                        pointer-events: none;
-                        transition: 0.3s;
-                        z-index: 999;
-                        border: none;
-                    }
-
-                    .scroll-top.active {
-                        opacity: 1;
-                        pointer-events: all;
-                        transform: translateY(0);
-                    }
-
-                    .scroll-top:hover {
-                        background: var(--primary-hover);
-                        transform: translateY(-3px);
-                    }
-
-                    .hidden {
-                        opacity: 0;
-                        transform: translateY(30px);
-                        transition: all 0.8s ease-out;
-                    }
-
-                    .show {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-
-                    footer {
-                        text-align: center;
-                        padding: 40px;
-                        border-top: 1px solid var(--border);
-                        color: var(--text-sub);
-                        margin-top: 40px;
-                        font-size: 0.9rem;
-                    }
-                </style>
-            </head>
-
-            <body>
-
-                <nav>
-                    <div class="nav-container">
-                        <div class="logo">Vinuda.dev</div>
-                        <button class="hamburger" id="hamburger" aria-label="Toggle Navigation"><i
-                                class="fas fa-bars"></i></button>
-                        <div class="nav-links" id="nav-links">
-                            <a href="#about" class="nav-link">About</a>
-                            <a href="#skills" class="nav-link">Skills</a>
-                            <a href="#projects" class="nav-link">Projects</a>
-                            <a href="#contact" class="nav-link">Contact</a>
-                            <button class="theme-toggle" id="theme-btn" aria-label="Toggle Theme"><i
-                                    class="fas fa-desktop"></i></button>
-                        </div>
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-shopping-cart" style="color:var(--success)"></i> NEW Items
+                </div>
+                <div class="badge badge-green" id="lbl-sale-total">Total: 0.00</div>
+            </div>
+            <div class="search-area">
+                <div class="input-wrapper">
+                    <i class="fas fa-barcode"></i>
+                    <input type="text" id="prodInput" class="form-input" placeholder="Scan Barcode..." autofocus
+                        onkeydown="if(event.key==='Enter') addNewItem()">
+                    <button class="btn-action btn-add" onclick="addNewItem()">Add</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table id="saleTable">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Price</th>
+                            <th class="text-center">Qty</th>
+                            <th align="right">Total</th>
+                            <th width="30"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="saleTbody">
+                        <tr>
+                            <td colspan="5" style="text-align:center; color:#999; padding:20px;">Scan items to add</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <div class="summary-group">
+            <div class="sum-item negative">
+                <label>Return Credit</label>
+                <span id="ft-credit">-0.00</span>
+            </div>
+            <div class="sum-item positive">
+                <label>New Item Total</label>
+                <span id="ft-new">+0.00</span>
+            </div>
+            <div class="sum-item" style="border-left:2px solid #ddd; padding-left:20px;">
+                <label id="status-label">NET BALANCE</label>
+                <span id="ft-balance" style="color:var(--primary-dark)">0.00</span>
+            </div>
+        </div>
+        <button class="btn-checkout" id="btn-process" onclick="openPaymentModal()" disabled>
+            <i class="fas fa-money-bill-wave"></i> Process Payment
+        </button>
+    </div>
+
+    <div class="modal-overlay" id="paymentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-cash-register"></i> Complete Exchange</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+
+                <div class="pay-summary">
+                    <div class="pay-row">
+                        <label>New Total</label>
+                        <span id="mod-new" style="color:var(--success)">0.00</span>
                     </div>
-                </nav>
+                    <div class="pay-row">
+                        <label>Return Credit</label>
+                        <span id="mod-ret" style="color:var(--danger)">0.00</span>
+                    </div>
+                    <div class="pay-row">
+                        <label>PAYABLE</label>
+                        <span id="mod-pay" style="color:var(--primary); text-decoration: underline;">0.00</span>
+                    </div>
+                </div>
 
-                <section class="hero hidden" id="about">
-                    <i class="fas fa-star magic-star"></i>
-                    <i class="fas fa-code magic-star"></i>
-                    <i class="fas fa-star magic-star"></i>
-                    <i class="fas fa-laptop-code magic-star"></i>
-
-                    <div class="profile-container">
-                        <svg class="profile-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 5C13.66 5 15 6.34 15 8C15 9.66 13.66 11 12 11C10.34 11 9 9.66 9 8C9 6.34 10.34 5 12 5ZM12 19.2C9.5 19.2 7.29 17.92 6 15.98C6.03 13.99 10 12.9 12 12.9C13.99 12.9 17.97 13.99 18 15.98C16.71 17.92 14.5 19.2 12 19.2Z" />
-                        </svg>
+                <div id="payment-options">
+                    <label style="font-weight:bold; margin-bottom:5px; display:block;">Select Payment Method:</label>
+                    <div class="payment-methods">
+                        <div class="p-method active" onclick="setPayMethod('CASH', this)"><i class="fas fa-coins"></i>
+                            Cash</div>
+                        <div class="p-method" onclick="setPayMethod('CARD', this)"><i class="fas fa-credit-card"></i>
+                            Card</div>
+                        <div class="p-method" onclick="setPayMethod('BANK', this)"><i class="fas fa-university"></i>
+                            Bank</div>
+                        <div class="p-method" onclick="setPayMethod('LOAN', this)"><i class="fas fa-user-clock"></i>
+                            Loan</div>
                     </div>
 
-                    <h1>Hi, I'm <span>Vinuda Sasmitha</span></h1>
+                    <div class="pay-input-group">
+                        <label>Amount Received / Paid</label>
+                        <input type="number" id="payInputAmount" class="pay-input" placeholder="0.00"
+                            oninput="calcModalBalance()">
+                    </div>
 
-                    <p class="hero-subtitle">
-                        I am a <span class="typing-text"></span>
-                    </p>
+                    <div class="balance-display">
+                        Balance: <span id="mod-balance">0.00</span>
+                    </div>
+                </div>
 
-                    <button class="about-toggle-btn" id="aboutToggle">More About Me <i
-                            class="fas fa-chevron-down"></i></button>
+                <div id="refund-message"
+                    style="display:none; text-align:center; padding:20px; background:#fff1f2; color:var(--danger); border-radius:8px; font-weight:bold;">
+                    <i class="fas fa-exclamation-circle"></i> REFUND DUE to Customer. Please return cash.
+                </div>
 
-                    <div class="about-content-wrapper" id="aboutContent">
-                        <div class="hero-description">
-                            <p>Hi! I'm
-                            <div class="hero-description">
-                                <p>Hi! I'
+            </div>
+            <div class="modal-footer">
+                <button class="btn-print" id="btn-final-print" onclick="finalizeTransaction()">
+                    <i class="fas fa-print"></i> SAVE & PRINT
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="print-area"></div>
+
+    <script>
+        // --- 1. DATA & VARIABLES ---
+        const DB_PRODUCTS = 'pos_products';
+        const DB_SALES = 'pos_sales';
+        const DB_SHOP = 'pos_shop_data';
+
+        let productsDB = JSON.parse(localStorage.getItem(DB_PRODUCTS)) || [];
+        let salesDB = JSON.parse(localStorage.getItem(DB_SALES)) || [];
+        // Default Shop Data if not set
+        let shopData = JSON.parse(localStorage.getItem(DB_SHOP)) || {
+            name: "MY POS SHOP",
+            address: "123, Main Street, Colombo",
+            phone: "077-1234567"
+        };
+
+        // State
+        let currentInvoiceItems = [];
+        let returnCart = [];
+        let newCart = [];
+        let refInvoiceID = "";
+
+        // Keyboard Nav State
+        let selectedRowIndex = -1;
+        let selectedPayMethod = 'CASH';
+        let netPayableAmount = 0;
+
+        // --- 2. KEYBOARD & INPUT HANDLING ---
+
+        // Handle Enter key in Invoice Search
+        function handleInvInput(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                findInvoice();
+            }
+        }
+
+        // Handle Arrow Keys for Return Table
+        document.addEventListener('keydown', (e) => {
+            const returnTable = document.getElementById('returnTable');
+            const rows = returnTable.querySelectorAll('tbody tr');
+
+            // Only navigate if table has data and Invoice Input is NOT focused
+            if (rows.length > 0 && document.activeElement !== document.getElementById('invInput') && !document.getElementById('paymentModal').style.display.includes('flex')) {
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (selectedRowIndex < rows.length - 1) {
+                        selectedRowIndex++;
+                        highlightRow(rows);
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (selectedRowIndex > 0) {
+                        selectedRowIndex--;
+                        highlightRow(rows);
+                    }
+                } else if (e.key === ' ' || e.key === 'Spacebar') { // Space to toggle
+                    e.preventDefault();
+                    if (selectedRowIndex >= 0 && selectedRowIndex < rows.length) {
+                        const checkbox = rows[selectedRowIndex].querySelector('input[type="checkbox"]');
+                        if (checkbox) {
+                            checkbox.click();
+                        }
+                    }
+                }
+            }
+        });
+
+        function highlightRow(rows) {
+            rows.forEach(r => r.classList.remove('kb-selected'));
+            if (selectedRowIndex >= 0 && rows[selectedRowIndex]) {
+                rows[selectedRowIndex].classList.add('kb-selected');
+                rows[selectedRowIndex].scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        // --- 3. RETURN LOGIC ---
+        function findInvoice() {
+            const id = document.getElementById('invInput').value.trim();
+            const invoice = salesDB.find(s => s.id.toLowerCase() === id.toLowerCase());
+
+            if (!invoice) {
+                alert("Invoice not found!");
+                return;
+            }
+
+            refInvoiceID = invoice.id;
+            currentInvoiceItems = JSON.parse(JSON.stringify(invoice.items));
+            returnCart = [];
+            selectedRowIndex = -1; // Reset nav
+
+            // Auto focus on table area implicitly by blurring input or moving focus
+            document.getElementById('invInput').blur();
+
+            renderReturnTable();
+            // Highlight first row implicitly for navigation readiness
+            selectedRowIndex = 0;
+            highlightRow(document.querySelectorAll('#returnTbody tr'));
+        }
+
+        function renderReturnTable() {
+            const tbody = document.getElementById('returnTbody');
+            tbody.innerHTML = "";
+
+            currentInvoiceItems.forEach((item, index) => {
+                const inReturn = returnCart.find(r => r.index === index);
+                const isChecked = inReturn ? 'checked' : '';
+                const rowClass = inReturn ? 'active-row' : '';
+                const lineTotal = inReturn ? (inReturn.qty * item.price).toFixed(2) : '0.00';
+
+                tbody.innerHTML += `
+                    <tr class="${rowClass}" onclick="clickSelectRow(${index})">
+                        <td>
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" ${isChecked} onchange="toggleReturnItem(${index}, this.checked)">
+                            </div>
+                        </td>
+                        <td>
+                            <strong>${item.name}</strong><br>
+                            <small class="text-muted">Sold @ ${item.price}</small>
+                        </td>
+                        <td>${item.price}</td>
+                        <td>
+                            ${inReturn ? `
+                                <button class="qty-btn" onclick="adjustReturnQty(${index}, -1); event.stopPropagation();">-</button>
+                                <span style="margin:0 5px; font-weight:bold;">${inReturn.qty}</span>
+                                <button class="qty-btn" onclick="adjustReturnQty(${index}, 1); event.stopPropagation();">+</button>
+                            ` : item.qty}
+                        </td>
+                        <td align="right" style="color:var(--danger); font-weight:bold;">${lineTotal}</td>
+                    </tr>
+                `;
+            });
+            calculateTotals();
+        }
+
+        function clickSelectRow(index) {
+            selectedRowIndex = index;
+            highlightRow(document.querySelectorAll('#returnTbody tr'));
+        }
+
+        function toggleReturnItem(index, isChecked) {
+            if (isChecked) {
+                const originalItem = currentInvoiceItems[index];
+                returnCart.push({
+                    index: index,
+                    barcode: originalItem.barcode || originalItem.code,
+                    name: originalItem.name,
+                    price: parseFloat(originalItem.price),
+                    qty: originalItem.qty,
+                    maxQty: originalItem.qty
+                });
+            } else {
+                returnCart = returnCart.filter(item => item.index !== index);
+            }
+            renderReturnTable();
+            document.getElementById('prodInput').focus(); // Jump to New Item scan
+        }
+
+        function adjustReturnQty(index, delta) {
+            const cartItem = returnCart.find(r => r.index === index);
+            if (!cartItem) return;
+
+            let newQty = cartItem.qty + delta;
+            if (newQty > cartItem.maxQty) newQty = cartItem.maxQty;
+            if (newQty < 1) newQty = 1;
+
+            cartItem.qty = newQty;
+            renderReturnTable();
+        }
+
+        // --- 4. NEW ITEM LOGIC ---
+        function addNewItem() {
+            const code = document.getElementById('prodInput').value.trim();
+            // Handle Code or Barcode match
+            const product = productsDB.find(p => (p.barcode && p.barcode === code) || p.code === code);
+
+            if (!product) {
+                alert("Product not found!");
+                document.getElementById('prodInput').select();
+                return;
+            }
+
+            const existing = newCart.find(i => i.barcode === (product.barcode || product.code));
+            if (existing) {
+                existing.qty++;
+            } else {
+                newCart.push({
+                    barcode: product.barcode || product.code,
+                    name: product.pName || product.name,
+                    price: parseFloat(product.sellPrice || product.price),
+                    qty: 1
+                });
+            }
+
+            document.getElementById('prodInput').value = "";
+            document.getElementById('prodInput').focus();
+            renderNewTable();
+        }
+
+        function renderNewTable() {
+            const tbody = document.getElementById('saleTbody');
+            tbody.innerHTML = "";
+
+            if (newCart.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999; padding:20px;">Scan items to add</td></tr>`;
+            }
+
+            newCart.forEach((item, index) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.price.toFixed(2)}</td>
+                        <td class="text-center">
+                            <button class="qty-btn" onclick="adjustNewQty(${index}, -1)">-</button>
+                            <span style="margin:0 5px; font-weight:bold;">${item.qty}</span>
+                            <button class="qty-btn" onclick="adjustNewQty(${index}, 1)">+</button>
+                        </td>
+                        <td align="right" style="color:var(--success); font-weight:bold;">
+                            ${(item.price * item.qty).toFixed(2)}
+                        </td>
+                        <td><i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="removeNewItem(${index})"></i></td>
+                    </tr>
+                `;
+            });
+            calculateTotals();
+        }
+
+        function adjustNewQty(index, delta) {
+            if (newCart[index].qty + delta < 1) return;
+            newCart[index].qty += delta;
+            renderNewTable();
+        }
+
+        function removeNewItem(index) {
+            newCart.splice(index, 1);
+            renderNewTable();
+        }
+
+        // --- 5. CALCULATIONS ---
+        function calculateTotals() {
+            let returnTotal = returnCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            let newTotal = newCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            let balance = newTotal - returnTotal;
+            netPayableAmount = balance;
+
+            // UI Updates
+            document.getElementById('lbl-return-total').innerText = "Credit: " + returnTotal.toFixed(2);
+            document.getElementById('lbl-sale-total').innerText = "Total: " + newTotal.toFixed(2);
+            document.getElementById('ft-credit').innerText = "-" + returnTotal.toFixed(2);
+            document.getElementById('ft-new').innerText = "+" + newTotal.toFixed(2);
+
+            const balDisplay = document.getElementById('ft-balance');
+            balDisplay.innerText = balance.toFixed(2);
+
+            if (balance < 0) {
+                balDisplay.style.color = "var(--danger)";
+                document.getElementById('status-label').innerText = "REFUND DUE";
+            } else {
+                balDisplay.style.color = "var(--primary-dark)";
+                document.getElementById('status-label').innerText = "NET PAYABLE";
+            }
+
+            // Enable Process Button if there is any activity
+            const hasActivity = (returnCart.length > 0 || newCart.length > 0);
+            document.getElementById('btn-process').disabled = !hasActivity;
+        }
+
+        // --- 6. MODAL & PAYMENT ---
+        function openPaymentModal() {
+            const overlay = document.getElementById('paymentModal');
+            overlay.style.display = 'flex';
+
+            let returnTotal = returnCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            let newTotal = newCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+            document.getElementById('mod-new').innerText = newTotal.toFixed(2);
+            document.getElementById('mod-ret').innerText = "- " + returnTotal.toFixed(2);
+            document.getElementById('mod-pay').innerText = netPayableAmount.toFixed(2);
+
+            const input = document.getElementById('payInputAmount');
+            const options = document.getElementById('payment-options');
+            const refundMsg = document.getElementById('refund-message');
+            const btnPrint = document.getElementById('btn-final-print');
+
+            input.value = "";
+            document.getElementById('mod-balance').innerText = "0.00";
+
+            if (netPayableAmount > 0) {
+                // Customer Pays
+                options.style.display = 'block';
+                refundMsg.style.display = 'none';
+                input.focus();
+                btnPrint.disabled = true; // Wait for input
+            } else {
+                // Refund or Zero
+                options.style.display = 'none';
+                if (netPayableAmount < 0) {
+                    refundMsg.style.display = 'block';
+                    refundMsg.innerHTML = `<i class="fas fa-exclamation-circle"></i> REFUND DUE: Rs. ${Math.abs(netPayableAmount).toFixed(2)}`;
+                } else {
+                    refundMsg.style.display = 'block';
+                    refundMsg.innerHTML = `<i class="fas fa-check-circle"></i> EVEN EXCHANGE. No Payment Required.`;
+                    refundMsg.style.color = "green";
+                    refundMsg.style.background = "#d1fae5";
+                }
+                btnPrint.disabled = false;
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+        }
+
+        function setPayMethod(method, el) {
+            selectedPayMethod = method;
+            document.querySelectorAll('.p-method').forEach(div => div.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function calcModalBalance() {
+            if (netPayableAmount <= 0) return;
+
+            const given = parseFloat(document.getElementById('payInputAmount').value) || 0;
+            const balance = given - netPayableAmount;
+
+            const balEl = document.getElementById('mod-balance');
+            balEl.innerText = balance.toFixed(2);
+
+            // Allow print even if partial payment (for credit) OR if fully paid
+            if (selectedPayMethod === 'LOAN') {
+                document.getElementById('btn-final-print').disabled = false;
+            } else {
+                // For Cash/Card, must pay full amount
+                if (given >= netPayableAmount) {
+                    balEl.style.color = "green";
+                    document.getElementById('btn-final-print').disabled = false;
+                } else {
+                    balEl.style.color = "red";
+                    document.getElementById('btn-final-print').disabled = true;
+                }
+            }
+        }
+
+        // --- 7. FINALIZE & PRINT ---
+        function finalizeTransaction() {
+            // A. Update Stock
+            // Return Items -> Increase Stock
+            returnCart.forEach(rItem => {
+                const p = productsDB.find(x => x.barcode === rItem.barcode);
+                if (p) {
+                    const currentStock = parseFloat(p.stock !== undefined ? p.stock : p.qty);
+                    p.stock = currentStock + rItem.qty;
+                }
+            });
+
+            // New Items -> Decrease Stock
+            newCart.forEach(nItem => {
+                const p = productsDB.find(x => x.barcode === nItem.barcode);
+                if (p) {
+                    const currentStock = parseFloat(p.stock !== undefined ? p.stock : p.qty);
+                    p.stock = currentStock - nItem.qty;
+                }
+            });
+
+            localStorage.setItem(DB_PRODUCTS, JSON.stringify(productsDB));
+
+            // B. Save Transaction
+            const exchangeID = "EXC-" + Date.now().toString().slice(-6);
+            const cashGiven = parseFloat(document.getElementById('payInputAmount').value) || 0;
+
+            const newSale = {
+                id: exchangeID,
+                date: new Date().toISOString(),
+                items: newCart,
+                returnedItems: returnCart,
+                total: netPayableAmount,
+                payMethod: (netPayableAmount > 0) ? selectedPayMethod : 'REFUND',
+                cashGiven: cashGiven,
+                refInvoice: refInvoiceID,
+                type: "EXCHANGE"
+            };
+
+            salesDB.push(newSale);
+            localStorage.setItem(DB_SALES, JSON.stringify(salesDB));
+
+            // C. Print
+            printReceipt(newSale);
+            closeModal();
+        }
+
+        function printReceipt(saleData) {
+            const dateStr = new Date(saleData.date).toLocaleString();
+
+            // 1. New Items (විකුණන අලුත් බඩු)
+            let newItemsHtml = "";
+            if (saleData.items && saleData.items.length > 0) {
+                saleData.items.forEach(i => {
+                    newItemsHtml += `
+                <div style="margin-bottom: 3px;">
+                    <div style="font-weight:bold; font-size:11px;">${i.name}</div>
+                    <div style="display:flex; justify-content:space-between; font-size:10px;">
+                        <span>${i.qty} x ${i.price.toFixed(2)}</span>
+                        <span>${(i.qty * i.price).toFixed(2)}</span>
+                    </div>
+                </div>
+            `;
+                });
+            }
+
+            function openCashDrawer() {
+                // Only works if printer supports ESC/POS
+                // ESC/POS command: pulse drawer pin 2
+                const drawerCmd = '\x1B\x70\x00\x19\xFA';
+
+                // If you have WebUSB printer (Chrome):
+                if (navigator.usb) {
+                    navigator.usb.requestDevice({ filters: [{ vendorId: 0xXXXX }] })
+                        .then(device => device.open())
+                        .then(device => device.selectConfiguration(1))
+                        .then(device => device.claimInterface(0))
+                        .then(device => device.transferOut(1, new TextEncoder().encode(drawerCmd)))
+                        .catch(err => console.warn("Cash drawer not opened:", err));
+                } else {
+                    console.log("Drawer command: ", drawerCmd);
+                    // If no WebUSB, at least log ESC/POS command
+                    // In real POS, send this to printer driver
+                }
+            }
+
+
+            // 2. Returned Items (ආපසු ගත් පරණ බඩු) - සෘණ (-) අගයක් ලෙස පෙන්වයි
+            let returnItemsHtml = "";
+            if (saleData.returnedItems && saleData.returnedItems.length > 0) {
+                returnItemsHtml += `<div style="border-bottom:1px dashed #000; margin:5px 0;"></div>`;
+                returnItemsHtml += `<div style="font-size:10px; font-weight:bold; margin-bottom:2px;">LESS: RETURN / EXCHANGE</div>`;
+
+                saleData.returnedItems.forEach(i => {
+                    returnItemsHtml += `
+                <div style="margin-bottom: 3px; color: #000;">
+                    <div style="font-size:11px;">${i.name} (OLD)</div>
+                    <div style="display:flex; justify-content:space-between; font-size:10px;">
+                        <span>${i.qty} x ${i.price.toFixed(2)}</span>
+                        <span>-${(i.qty * i.price).toFixed(2)}</span>
+                    </div>
+                </div>
+            `;
+                });
+            }
+
+            // 3. Totals Calculation
+            const newTotal = saleData.items ? saleData.items.reduce((s, i) => s + (i.price * i.qty), 0) : 0;
+            const returnTotal = saleData.returnedItems ? saleData.returnedItems.reduce((s, i) => s + (i.price * i.qty), 0) : 0;
+            const netPayable = saleData.total; // මෙය දැනටමත් (New - Return) ලෙස ගණනය කර ඇත.
+
+            let footerHtml = "";
+
+            // Normal Payment Scene
+            if (netPayable >= 0) {
+                footerHtml = `
+            <div style="border-top:1px solid #000; margin-top:5px; padding-top:2px;"></div>
+            <div style="display:flex; justify-content:space-between; font-size:10px;">
+                <span>Sub Total:</span> <span>${newTotal.toFixed(2)}</span>
+            </div>
+            ${returnTotal > 0 ? `
+            <div style="display:flex; justify-content:space-between; font-size:10px;">
+                <span>Less Return:</span> <span>-${returnTotal.toFixed(2)}</span>
+            </div>` : ''}
+            
+            <div style="border-bottom:1px double #000; margin:3px 0;"></div>
+            
+            <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:13px;">
+                <span>NET TOTAL:</span> <span>${netPayable.toFixed(2)}</span>
+            </div>
+            
+            <div style="margin-top:5px; font-size:10px;">
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Cash/Card (${saleData.payMethod}):</span>
+                    <span>${(saleData.cashGiven || 0).toFixed(2)}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Balance:</span>
+                    <span>${((saleData.cashGiven || 0) - netPayable).toFixed(2)}</span>
+                </div>
+            </div>
+        `;
+            }
+            // Refund Scene (Return value is higher than New Item)
+            else {
+                footerHtml = `
+            <div style="border-top:1px solid #000; margin-top:5px; padding-top:2px;"></div>
+            <div style="display:flex; justify-content:space-between; font-size:10px;">
+                <span>New Items:</span> <span>${newTotal.toFixed(2)}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:10px;">
+                <span>Less Return:</span> <span>-${returnTotal.toFixed(2)}</span>
+            </div>
+            <div style="border-bottom:1px double #000; margin:3px 0;"></div>
+            <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:12px;">
+                <span>REFUND DUE:</span> <span>${Math.abs(netPayable).toFixed(2)}</span>
+            </div>
+        `;
+            }
+
+            // 4. Construct Full HTML
+            const html = `
+        <div style="font-family: 'Courier New', monospace; width: 100%; color:#000;">
+            <center>
+                <h3 style="margin:0; font-size:14px;">${shopData.name}</h3>
+                <div style="font-size:10px;">${shopData.address}</div>
+                <div style="font-size:10px;">${shopData.phone}</div>
+                <br>
+                <div style="font-weight:bold; font-size:11px; text-decoration:underline;">EXCHANGE BILL</div>
+            </center>
+            
+            <div style="font-size:10px; margin-top:5px;">
+                <div>Inv No: ${saleData.id}</div>
+                <div>Date: ${dateStr}</div>
+                ${saleData.refInvoice ? `<div>Ref Inv: ${saleData.refInvoice}</div>` : ''}
+            </div>
+
+            <div style="border-bottom:1px dashed #000; margin:5px 0;"></div>
+
+            ${newItemsHtml}
+            ${returnItemsHtml}
+
+            ${footerHtml}
+
+            <br>
+            <center>
+                <div style="font-size:9px;">** THANK YOU **</div>
+                <div style="font-size:8px;">System by Vinuda Sasmitha </div>
+            </center>
+        </div>
+    `;
+
+            // Inject and Print
+            const printArea = document.getElementById('print-area');
+            printArea.innerHTML = html;
+            printArea.style.display = 'block';
+
+            setTimeout(() => {
+                window.print();
+                printArea.style.display = 'none';
+
+                // Reload page to clear data
+                setTimeout(() => {
+                    location.reload();
+                }, 500);
+            }, 300);
+        }
+    </script>
+</body>
+
+</html>

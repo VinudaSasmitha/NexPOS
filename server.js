@@ -114,7 +114,7 @@ const schemas = {
         Name: Joi.string().min(2).max(100).required(),
         Email: Joi.string().email().required(),
         Phone_Number: Joi.string().max(20).optional().allow(''),
-        Password: Joi.string().min(6).required(), // <-- මෙන්න මේ පේළිය තමයි අඩුවෙලා තිබ්බේ
+        Password: Joi.string().min(6).required(),
         Role_ID: Joi.number().integer().required(),
         Branch_ID: Joi.number().integer().optional().allow(null)
     }),
@@ -180,6 +180,12 @@ const schemas = {
         Refund_Amount: Joi.number().positive().required(),
         Branch_ID: Joi.number().integer().required(),
         Payment_Method: Joi.string().valid('Cash', 'Card', 'Online').required()
+    }),
+    supplier: Joi.object({
+        Name: Joi.string().max(100).required(),
+        Phone_Number: Joi.string().max(20).required(),
+        Email: Joi.string().email().optional().allow(''),
+        Company: Joi.string().max(150).optional().allow('')
     })
 };
 
@@ -213,16 +219,16 @@ app.post(
     validate(schemas.register),
     async (req, res) => {
         try {
-            const { Name, Email, Password, Role_ID, Branch_ID } = req.body;
-            const hashedPassword = await bcrypt.hash(Password, 12); // Fix: stronger salt
+            const { Name, Email, Phone_Number, Password, Role_ID, Branch_ID } = req.body;
+            const hashedPassword = await bcrypt.hash(Password, 12);
 
             await query(
-                "INSERT INTO Members (Name, Email, Password, Role_ID, Branch_ID) VALUES (?, ?, ?, ?, ?)",
-                [Name, Email, hashedPassword, Role_ID, Branch_ID || null]
+                "INSERT INTO Members (Name, Email, Phone_Number, Password, Role_ID, Branch_ID) VALUES (?, ?, ?, ?, ?, ?)",
+                [Name, Email, Phone_Number || null, hashedPassword, Role_ID, Branch_ID || null]
             );
 
             await auditLog(req.user.id, `Registered new user: ${Email} with Role_ID: ${Role_ID}`);
-            res.status(201).json({ message: '✅ User Registered' });
+            res.status(201).json({ message: '✅ User Registered Successfully!' });
         } catch (err) {
             if (err.code === 'ER_DUP_ENTRY') return res.status(409).json({ message: 'Email already exists' });
             res.status(500).json({ message: 'Server error', error: err.message });
@@ -249,7 +255,6 @@ app.post('/api/login', loginLimiter, validate(schemas.login), async (req, res) =
 
         const user = result[0];
 
-        // Lock out after 5 failed attempts
         if (user.Failed_Login_Attempts >= 5) {
             return res.status(403).json({ message: '🔒 Account locked. Contact admin.' });
         }
@@ -264,7 +269,6 @@ app.post('/api/login', loginLimiter, validate(schemas.login), async (req, res) =
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-        // Reset failed attempts + update last login
         await query(
             "UPDATE Members SET Failed_Login_Attempts = 0, Last_Login = NOW() WHERE Member_ID = ?",
             [user.Member_ID]
@@ -297,26 +301,20 @@ app.post('/api/login', loginLimiter, validate(schemas.login), async (req, res) =
 // 👤 CUSTOMERS
 // ===============================
 app.post(
-    '/api/register',
+    '/api/customers',
     authenticateToken,
-    authorizeRoles('Admin'),
-    validate(schemas.register),
+    authorizeRoles('Admin', 'Sales Manager', 'Cashier'),
+    validate(schemas.customer),
     async (req, res) => {
         try {
-            // Add Phone Number 
-            const { Name, Email, Phone_Number, Password, Role_ID, Branch_ID } = req.body;
-            const hashedPassword = await bcrypt.hash(Password, 12);
-
-            // SQL Query Add Number 
-            await query(
-                "INSERT INTO Members (Name, Email, Phone_Number, Password, Role_ID, Branch_ID) VALUES (?, ?, ?, ?, ?, ?)",
-                [Name, Email, Phone_Number || null, hashedPassword, Role_ID, Branch_ID || null]
+            const { Name, Phone_Number, Email, Address } = req.body;
+            const result = await query(
+                "INSERT INTO Customers (Name, Phone_Number, Email, Address) VALUES (?, ?, ?, ?)",
+                [Name, Phone_Number, Email, Address]
             );
-
-            await auditLog(req.user.id, `Registered new user: ${Email} with Role_ID: ${Role_ID}`);
-            res.status(201).json({ message: '✅ User Registered Successfully!' });
+            await auditLog(req.user.id, `Added customer: ${Name}`);
+            res.status(201).json({ id: result.insertId, message: 'Customer created' });
         } catch (err) {
-            if (err.code === 'ER_DUP_ENTRY') return res.status(409).json({ message: 'Email already exists' });
             res.status(500).json({ message: 'Server error', error: err.message });
         }
     }
@@ -338,7 +336,6 @@ app.get(
     }
 );
 
-// Soft delete customer (Fix #6)
 app.delete(
     '/api/customers/:id',
     authenticateToken,
@@ -414,15 +411,14 @@ app.get(
     }
 );
 
-// Barcode lookup (Fix #11 — Optimized for POS scanning)
 app.get(
     '/api/products/barcode/:barcode',
     authenticateToken,
-    authorizeRoles('Admin', 'Cashier', 'Sales Manager', 'Branch Manager'),
+    authorizeRoles('Admin', 'Cashier', 'Sales Manager', 'Branch Manager', 'Inventory Manager'),
     async (req, res) => {
         try {
             const result = await query(
-                `SELECT p.*, pp.Sell_Price, pp.Tax_Percentage, IFNULL(i.Quantity, 0) AS Quantity
+                `SELECT p.*, pp.Sell_Price, pp.Cost_Price, pp.Wholesale_Price, pp.Tax_Percentage, IFNULL(i.Quantity, 0) AS Quantity
                  FROM Products p
                  LEFT JOIN Product_Prices pp ON pp.Price_ID = (
                      SELECT Price_ID FROM Product_Prices
@@ -431,7 +427,7 @@ app.get(
                  )
                  LEFT JOIN Inventory i ON p.Product_ID = i.Product_ID AND i.Branch_ID = ?
                  WHERE p.Barcode = ? AND p.Is_Deleted = FALSE`,
-                [req.user.branchId, req.params.barcode]
+                [req.user.branchId || 1, req.params.barcode]
             );
             if (result.length === 0) return res.status(404).json({ message: 'Product not found' });
             res.json(result[0]);
@@ -441,7 +437,6 @@ app.get(
     }
 );
 
-// Fix #3 — Product search by name (POS typing search)
 app.get(
     '/api/products/search/:name',
     authenticateToken,
@@ -476,7 +471,6 @@ app.get(
     }
 );
 
-// Soft delete product (Fix #6)
 app.delete(
     '/api/products/:id',
     authenticateToken,
@@ -493,7 +487,7 @@ app.delete(
 );
 
 // ===============================
-// 💰 PRICES (Fix #10 — History-aware)
+// 💰 PRICES
 // ===============================
 app.post(
     '/api/prices',
@@ -533,7 +527,7 @@ app.get(
 );
 
 // ===============================
-// 📦 INVENTORY (Fix #9 — Separated Branch/Warehouse)
+// 📦 OLD INVENTORY (For general use)
 // ===============================
 app.post(
     '/api/inventory',
@@ -616,7 +610,7 @@ app.post(
 );
 
 // ===============================
-// 🧾 BILLING (Fix #5 Tax, Fix #4 Audit)
+// 🧾 BILLING
 // ===============================
 app.post(
     '/api/bill',
@@ -757,9 +751,8 @@ app.post('/api/returns', authenticateToken, authorizeRoles('Admin', 'Cashier', '
 });
 
 // ===============================
-// 📊 DASHBOARD & REPORTS (Full Logic)
+// 📊 DASHBOARD & REPORTS
 // ===============================
-
 app.get('/api/dashboard/sales', authenticateToken, async (req, res) => {
     try {
         let sql = `SELECT b.Branch_ID, br.Name AS Branch_Name, SUM(b.Total_Amount) AS Total_Sales, SUM(b.Tax_Amount) AS Total_Tax, COUNT(*) AS Total_Bills, DATE(b.Created_At) AS Sale_Date FROM Bills b JOIN Branches br ON b.Branch_ID = br.Branch_ID`;
@@ -839,11 +832,172 @@ app.get('/api/branches', authenticateToken, async (req, res) => {
         res.json(result);
     } catch (err) { res.status(500).json({ message: 'Server error' }); }
 });
+
 app.get('/api/make-hash', async (req, res) => {
-    // ඔයාට ඕන password එක මෙතන දෙන්න (මම admin123 දුන්නා)
     const hash = await bcrypt.hash('admin123', 12);
     res.send(hash);
 });
+
+// ==========================================
+// 🏭 SUPPLIERS (NEW)
+// ==========================================
+app.post('/api/suppliers', authenticateToken, authorizeRoles('Admin', 'Inventory Manager', 'Warehouse Manager'), validate(schemas.supplier), async (req, res) => {
+    try {
+        const { Name, Phone_Number, Email, Company } = req.body;
+        const result = await query(
+            "INSERT INTO Suppliers (Name, Phone_Number, Email, Company) VALUES (?, ?, ?, ?)",
+            [Name, Phone_Number, Email || null, Company || null]
+        );
+        res.status(201).json({ id: result.insertId, message: '✅ Supplier Added Successfully' });
+    } catch (err) { res.status(500).json({ message: 'Server error', error: err.message }); }
+});
+
+app.get('/api/suppliers', authenticateToken, async (req, res) => {
+    try {
+        const result = await query("SELECT * FROM Suppliers WHERE Is_Deleted = FALSE ORDER BY Name");
+        res.json(result);
+    } catch (err) { res.status(500).json({ message: 'Server error' }); }
+});
+
+// ==========================================
+// 📦 PRO MASTER RECEIVE (GRN / STOCK IN) 
+// ==========================================
+app.post('/api/master-receive', authenticateToken, authorizeRoles('Admin', 'Inventory Manager', 'Branch Manager'), async (req, res) => {
+    const {
+        Category_ID, Barcode, Product_Name, Brand_Name, Unit_Type, Size_Weight,
+        Stock_Quantity, Expire_Date, Batch_Number,
+        Buying_Price, Retail_Price, Wholesale_Price,
+        Total_Bill, Amount_Paid, Remaining_Due,
+        Is_New_Supplier, Supplier_ID, Supplier_Name, Supplier_Phone, Supplier_Notes
+    } = req.body;
+
+    const branchId = req.user.branchId || 1;
+    const userId = req.user.id;
+
+    // Use queryConn wrapper to maintain compatibility with existing pool setup
+    db.getConnection(async (err, conn) => {
+        if (err) return res.status(500).json({ message: 'Database connection error' });
+
+        try {
+            await queryConn(conn, 'START TRANSACTION');
+
+            // 1. HANDLE SUPPLIER
+            let finalSupplierId = Supplier_ID;
+            if (Is_New_Supplier) {
+                const supResult = await queryConn(conn,
+                    "INSERT INTO Suppliers (Name, Phone_Number, Notes) VALUES (?, ?, ?)",
+                    [Supplier_Name, Supplier_Phone, Supplier_Notes]
+                );
+                finalSupplierId = supResult.insertId;
+            }
+
+            // 🔥 2. SECURE BACKEND BARCODE CHECK
+            const existingProduct = await queryConn(conn, "SELECT Product_ID FROM Products WHERE Barcode = ? FOR UPDATE", [Barcode]);
+            let finalProductId;
+            let isExisting = existingProduct.length > 0;
+
+            if (isExisting) {
+                // ✅ EXISTING PRODUCT -> UPDATE DETAILS
+                finalProductId = existingProduct[0].Product_ID;
+
+                await queryConn(conn,
+                    "UPDATE Products SET Name=?, Brand=?, Unit=?, Description=?, Category_ID=? WHERE Product_ID=?",
+                    [Product_Name, Brand_Name, Unit_Type, Size_Weight, Category_ID, finalProductId]
+                );
+
+                // Update Inventory
+                await queryConn(conn, `
+                    INSERT INTO Inventory (Product_ID, Branch_ID, Quantity, Expire_Date, Supplier_ID, Batch_Number) 
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    ON DUPLICATE KEY UPDATE 
+                        Quantity = Quantity + VALUES(Quantity), 
+                        Expire_Date = VALUES(Expire_Date),
+                        Supplier_ID = VALUES(Supplier_ID),
+                        Batch_Number = VALUES(Batch_Number)
+                `, [finalProductId, branchId, Stock_Quantity, Expire_Date || null, finalSupplierId, Batch_Number]);
+            } else {
+                // ✅ NEW PRODUCT -> INSERT
+                const prodResult = await queryConn(conn,
+                    "INSERT INTO Products (Category_ID, Barcode, Name, Brand, Unit, Description) VALUES (?, ?, ?, ?, ?, ?)",
+                    [Category_ID, Barcode, Product_Name, Brand_Name, Unit_Type, Size_Weight]
+                );
+                finalProductId = prodResult.insertId;
+
+                // Insert Inventory
+                await queryConn(conn,
+                    "INSERT INTO Inventory (Product_ID, Branch_ID, Quantity, Expire_Date, Supplier_ID, Batch_Number) VALUES (?, ?, ?, ?, ?, ?)",
+                    [finalProductId, branchId, Stock_Quantity, Expire_Date || null, finalSupplierId, Batch_Number]
+                );
+            }
+
+            // 3. PRICING HISTORY
+            await queryConn(conn,
+                "INSERT INTO Product_Prices (Product_ID, Cost_Price, Sell_Price, Wholesale_Price, Effective_Date) VALUES (?, ?, ?, ?, CURDATE())",
+                [finalProductId, Buying_Price, Retail_Price, Wholesale_Price || 0]
+            );
+
+            // 4. PURCHASES (Save to accounting table)
+            try {
+                const purchaseResult = await queryConn(conn,
+                    "INSERT INTO Purchases (Supplier_ID, Total_Bill, Amount_Paid, Remaining_Due, Branch_ID) VALUES (?, ?, ?, ?, ?)",
+                    [finalSupplierId, Total_Bill, Amount_Paid, Remaining_Due, branchId]
+                );
+
+                // 5. STOCK MOVEMENTS WITH REFERENCE
+                await queryConn(conn,
+                    "INSERT INTO Stock_Movements (Product_ID, Branch_ID, Quantity_In, Reason, Reference_Type, Reference_ID) VALUES (?, ?, ?, 'STOCK_IN', 'PURCHASE', ?)",
+                    [finalProductId, branchId, Stock_Quantity, purchaseResult.insertId]
+                );
+            } catch (e) {
+                // Fallback in case Purchases table doesn't exist, just save movement
+                await queryConn(conn,
+                    "INSERT INTO Stock_Movements (Product_ID, Branch_ID, Quantity_In, Reason, Reference_Type) VALUES (?, ?, ?, 'STOCK_IN', 'PURCHASE')",
+                    [finalProductId, branchId, Stock_Quantity]
+                );
+            }
+
+            // 6. SUPPLIER LIFETIME PURCHASE
+            await queryConn(conn,
+                "UPDATE Suppliers SET Lifetime_Total_Purchase = Lifetime_Total_Purchase + ? WHERE Supplier_ID = ?",
+                [Total_Bill, finalSupplierId]
+            );
+
+            await queryConn(conn, 'COMMIT');
+            await auditLog(userId, `${isExisting ? 'Updated' : 'Added'} product ${Product_Name} via GRN`, 'Inventory', null, getIp(req));
+
+            res.status(201).json({
+                message: isExisting ? '⚡ Stock Updated Successfully!' : '✅ New Product Added Successfully!',
+                batch: Batch_Number
+            });
+
+        } catch (error) {
+            await queryConn(conn, 'ROLLBACK');
+            res.status(400).json({ message: 'Failed to save data', error: error.message });
+        } finally {
+            conn.release();
+        }
+    });
+});
+
+// ==========================================
+// GET INVENTORY LIST (NEW)
+// ==========================================
+app.get('/api/recent-inventory', authenticateToken, async (req, res) => {
+    try {
+        const sql = `
+            SELECT p.Barcode, p.Name AS Product, pp.Cost_Price AS Cost, pp.Sell_Price AS Price, i.Quantity AS Stock, i.Batch_Number 
+            FROM Products p
+            JOIN Inventory i ON p.Product_ID = i.Product_ID
+            LEFT JOIN Product_Prices pp ON pp.Price_ID = (
+                SELECT Price_ID FROM Product_Prices WHERE Product_ID = p.Product_ID ORDER BY Effective_Date DESC LIMIT 1
+            )
+            ORDER BY p.Product_ID DESC LIMIT 10
+        `;
+        const result = await query(sql);
+        res.json(result);
+    } catch (err) { res.status(500).json({ message: 'Server error' }); }
+});
+
 // ===============================
 // SERVER
 // ===============================
