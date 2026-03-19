@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Exchange | POS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+            --radius: 12px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- Header --- */
+        .navbar {
+            background: var(--card-bg);
+            padding: 0 24px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .brand {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-back {
+            background: #f3f4f6;
+            color: var(--text-main);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-back:hover {
+            background: #e5e7eb;
+        }
+
+        /* --- Main Grid --- */
+        .container {
+            flex: 1;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .card-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fafafa;
+        }
+
+        .card-title {
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .badge-red {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+
+        .badge-green {
+            background: #d1fae5;
+            color: var(--success);
+        }
+
+        /* --- Search Area --- */
+        .search-area {
+            padding: 15px;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 10px 10px 36px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-action {
+            padding: 0 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+        }
+
+        .btn-find {
+            background: var(--primary);
+        }
+
+        .btn-add {
+            background: var(--success);
+        }
+
+        /* --- Tables --- */
+        .table-container {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: #f9fafb;
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            padding: 12px 16px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        /* Highlight for Keyboard Navigation */
+        tr.kb-selected {
+            background-color: #e0e7ff;
+            border-left: 4px solid var(--primary);
+        }
+
+        tr.active-row {
+            background-color: #fff1f2;
+        }
+
+        /* Items selected for return */
+
+        .checkbox-wrapper input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--danger);
+        }
+
+        .qty-btn {
+            background: #f3f4f6;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 2px 8px;
+            cursor: pointer;
+        }
+
+        .qty-btn:hover {
+            background: #e5e7eb;
+        }
+
+        /* --- Bottom Bar --- */
+        .bottom-bar {
+            background: white;
+            border-top: 1px solid var(--border);
+            padding: 15px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .summary-group {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .sum-item label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .sum-item span {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .sum-item.negative span {
+            color: var(--danger);
+        }
+
+        .sum-item.positive span {
+            color: var(--success);
+        }
+
+        .btn-checkout {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-checkout:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* --- MODAL (POPUP) STYLES --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-content {
+            background: white;
+            width: 600px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            animation: popIn 0.3s ease;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 30px;
+            display: grid;
+            gap: 20px;
+        }
+
+        .pay-summary {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 10px;
+            border: 1px solid #eee;
+        }
+
+        .pay-row {
+            text-align: center;
+        }
+
+        .pay-row label {
+            font-size: 0.8rem;
+            color: #666;
+            font-weight: bold;
+            display: block;
+        }
+
+        .pay-row span {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #333;
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .p-method {
+            border: 2px solid #eee;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        .p-method:hover {
+            background: #f0f7ff;
+            border-color: var(--primary);
+        }
+
+        .p-method.active {
+            background: #e0e7ff;
+            border-color: var(--primary);
+            color: var(--primary-dark);
+            font-weight: bold;
+        }
+
+        .p-method i {
+            display: block;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .pay-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .pay-input {
+            font-size: 2rem;
+            padding: 10px;
+            text-align: right;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .pay-input:focus {
+            border-color: var(--success);
+            outline: none;
+        }
+
+        .balance-display {
+            text-align: right;
+            margin-top: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            background: #f9fafb;
+            text-align: right;
+            border-top: 1px solid #eee;
+        }
+
+        .btn-print {
+            background: var(--success);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-print:disabled {
+            background: #ccc;
+        }
+
+        /* Print Style */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #print-area,
+            #print-area * {
+                visibility: visible;
+            }
+
+            #print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 80mm;
+                padding: 5px;
+                color: black;
+                background: white;
+            }
+        }
+
+        #print-area {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="brand">
+            <div style="background:var(--primary); color:white; padding:6px; border-radius:8px;">
+                <i class="fas fa-sync-alt"></i>
+            </div>
+            Smart Exchange System
+        </div>
+        <button class="btn-back" onclick="location.reload()">
+            <i class="fas fa-redo"></i> Reset / New
+        </button>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-undo-alt" style="color:var(--danger)"></i> RETURN Items
+                </div>
+                <div class="badge badge-red" id="lbl-return-total">Credit: 0.00</div>
+            </div>
+            <div class="search-area">
+                <div class="input-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="invInput" class="form-input"
+                        placeholder="Enter Invoice No (e.g. INV-XXXX)..." onkeydown="handleInvInput(event)">
+                    <button class="btn-action btn-find" onclick="findInvoice()">Find</button>
+                </div>
+                <small style="color:#666; margin-top:5px; display:block;">* Use Arrow Keys (↓ ↑) to select items, Space
+                    to check.</small>
+            </div>
+            <div class="table-container">
+                <table id="returnTable">
+                    <thead>
+                        <tr>
+                            <th width="40">Use</th>
+                            <th>Item</th>
+                            <th>Sold Price</th>
+                            <th>Qty</th>
+                            <th align="right">Return Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="returnTbody">
+                        <tr>
+                            <td colspan="5" style="text-align:center; color:#999; padding:20px;">Load an invoice to
+                                start</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-shopping-cart" style="color:var(--success)"></i> NEW Items
+                </div>
+                <div class="badge badge-green" id="lbl-sale-total">Total: 0.00</div>
+            </div>
+            <div class="search-area">
+                <div class="input-wrapper">
+                    <i class="fas fa-barcode"></i>
+                    <input type="text" id="prodInput" class="form-input" placeholder="Scan Barcode..." autofocus
+                        onkeydown="if(event.key==='Enter') addNewItem()">
+                    <button class="btn-action btn-add" onclick="addNewItem()">Add</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table id="saleTable">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Price</th>
+                            <th class="text-center">Qty</th>
+                            <th align="right">Total</th>
+                            <th width="30"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="saleTbody">
+                        <tr>
+                            <td colspan="5" style="text-align:center; color:#999; padding:20px;">Scan items to add</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <div class="summary-group">
+            <div class="sum-item negative">
+                <label>Return Credit</label>
+                <span id="ft-credit">-0.00</span>
+            </div>
+            <div class="sum-item positive">
+                <label>New Item Total</label>
+                <span id="ft-new">+0.00</span>
+            </div>
+            <div class="sum-item" style="border-left:2px solid #ddd; padding-left:20px;">
+                <label id="status-label">NET BALANCE</label>
+                <span id="ft-balance" style="color:var(--primary-dark)">0.00</span>
+            </div>
+        </div>
+        <button class="btn-checkout" id="btn-process" onclick="openPaymentModal()" disabled>
+            <i class="fas fa-money-bill-wave"></i> Process Payment
+        </button>
+    </div>
+
+    <div class="modal-overlay" id="paymentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-cash-register"></i> Complete Exchange</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+
+                <div class="pay-summary">
+                    <div class="pay-row">
+                        <label>New Total</label>
+                        <span id="mod-new" style="color:var(--success)">0.00</span>
+                    </div>
+                    <div class="pay-row">
+                        <label>Return Credit</label>
+                        <span id="mod-ret" style="color:var(--danger)">0.00</span>
+                    </div>
+                    <div class="pay-row">
+                        <label>PAYABLE</label>
+                        <span id="mod-pay" style="color:var(--primary); text-decoration: underline;">0.00</span>
+                    </div>
+                </div>
+
+                <div id="payment-options">
+                    <label style="font-weight:bold; margin-bottom:5px; display:block;">Select Payment Method:</label>
+                    <div class="payment-methods">
+                        <div class="p-method active" onclick="setPayMethod('CASH', this)"><i class="fas fa-coins"></i>
+                            Cash</div>
+                        <div class="p-method" onclick="setPayMethod('CARD', this)"><i class="fas fa-credit-card"></i>
+                            Card</div>
+                        <div class="p-method" onclick="setPayMethod('BANK', this)"><i class="fas fa-university"></i>
+                            Bank</div>
+                        <div class="p-method" onclick="setPayMethod('LOAN', this)"><i class="fas fa-user-clock"></i>
+                            Loan</div>
+                    </div>
+
+                    <div class="pay-input-group">
+                        <label>Amount Received / Paid</label>
+                        <input type="number" id="payInputAmount" class="pay-input" placeholder="0.00"
+                            oninput="calcModalBalance()">
+                    </div>
+
+                    <div class="balance-display">
+                        Balance: <span id="mod-balance">0.00</span>
+                    </div>
+                </div>
+
+                <div id="refund-message"
+                    style="display:none; text-align:center; padding:20px; background:#fff1f2; color:var(--danger); border-radius:8px; font-weight:bold;">
+                    <i class="fas fa-exclamation-circle"></i> REFUND DUE to Customer. Please return cash.
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn-print" id="btn-final-print" onclick="finalizeTransaction()">
+                    <i class="fas fa-print"></i> SAVE & PRINT
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="print-area"></div>
+
+    <script>
+        // --- 1. DATA & VARIABLES ---
+        const DB_PRODUCTS = 'pos_products';
+        const DB_SALES = 'pos_sales';
+        const DB_SHOP = 'pos_shop_data';
+
+        let productsDB = JSON.parse(localStorage.getItem(DB_PRODUCTS)) || [];
+        let salesDB = JSON.parse(localStorage.getItem(DB_SALES)) || [];
+        // Default Shop Data if not set
+        let shopData = JSON.parse(localStorage.getItem(DB_SHOP)) || {
+            name: "MY POS SHOP",
+            address: "123, Main Street, Colombo",
+            phone: "077-1234567"
+        };
+
+        // State
+        let currentInvoiceItems = [];
+        let returnCart = [];
+        let newCart = [];
+        let refInvoiceID = "";
+
+        // Keyboard Nav State
+        let selectedRowIndex = -1;
+        let selectedPayMethod = 'CASH';
+        let netPayableAmount = 0;
+
+        // --- 2. KEYBOARD & INPUT HANDLING ---
+
+        // Handle Enter key in Invoice Search
+        function handleInvInput(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                findInvoice();
+            }
+        }
+
+        // Handle Arrow Keys for Return Table
+        document.addEventListener('keydown', (e) => {
+            const returnTable = document.getElementById('returnTable');
+            const rows = returnTable.querySelectorAll('tbody tr');
+
+            // Only navigate if table has data and Invoice Input is NOT focused
+            if (rows.length > 0 && document.activeElement !== document.getElementById('invInput') && !document.getElementById('paymentModal').style.display.includes('flex')) {
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (selectedRowIndex < rows.length - 1) {
+                        selectedRowIndex++;
+                        highlightRow(rows);
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (selectedRowIndex > 0) {
+                        selectedRowIndex--;
+                        highlightRow(rows);
+                    }
+                } else if (e.key === ' ' || e.key === 'Spacebar') { // Space to toggle
+                    e.preventDefault();
+                    if (selectedRowIndex >= 0 && selectedRowIndex < rows.length) {
+                        const checkbox = rows[selectedRowIndex].querySelector('input[type="checkbox"]');
+                        if (checkbox) {
+                            checkbox.click();
+                        }
+                    }
+                }
+            }
+        });
+
+        function highlightRow(rows) {
+            rows.forEach(r => r.classList.remove('kb-selected'));
+            if (selectedRowIndex >= 0 && rows[selectedRowIndex]) {
+                rows[selectedRowIndex].classList.add('kb-selected');
+                rows[selectedRowIndex].scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        // --- 3. RETURN LOGIC ---
+        function findInvoice() {
+            const id = document.getElementById('invInput').value.trim();
+            const invoice = salesDB.find(s => s.id.toLowerCase() === id.toLowerCase());
+
+            if (!invoice) {
+                alert("Invoice not found!");
+                return;
+            }
+
+            refInvoiceID = invoice.id;
+            currentInvoiceItems = JSON.parse(JSON.stringify(invoice.items));
+            returnCart = [];
+            selectedRowIndex = -1; // Reset nav
+
+            // Auto focus on table area implicitly by blurring input or moving focus
+            document.getElementById('invInput').blur();
+
+            renderReturnTable();
+            // Highlight first row implicitly for navigation readiness
+            selectedRowIndex = 0;
+            highlightRow(document.querySelectorAll('#returnTbody tr'));
+        }
+
+        function renderReturnTable() {
+            const tbody = document.getElementById('returnTbody');
+            tbody.innerHTML = "";
+
+            currentInvoiceItems.forEach((item, index) => {
+                const inReturn = returnCart.find(r => r.index === index);
+                const isChecked = inReturn ? 'checked' : '';
+                const rowClass = inReturn ? 'active-row' : '';
+                const lineTotal = inReturn ? (inReturn.qty * item.price).toFixed(2) : '0.00';
+
+                tbody.innerHTML += `
+                    <tr class="${rowClass}" onclick="clickSelectRow(${index})">
+                        <td>
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" ${isChecked} onchange="toggleReturnItem(${index}, this.checked)">
+                            </div>
+                        </td>
+                        <td>
+                            <strong>${item.name}</strong><br>
+                            <small class="text-muted">Sold @ ${item.price}</small>
+                        </td>
+                        <td>${item.price}</td>
+                        <td>
+                            ${inReturn ? `
+                                <button class="qty-btn" onclick="adjustReturnQty(${index}, -1); event.stopPropagation();">-</button>
+                                <span style="margin:0 5px; font-weight:bold;">${inReturn.qty}</span>
+                                <button class="qty-btn" onclick="adjustReturnQty(${index}, 1); event.stopPropagation();">+</button>
+                            ` : item.qty}
+                        </td>
+                        <td align="right" style="color:var(--danger); font-weight:bold;">${lineTotal}</td>
+                    </tr>
+                `;
+            });
+            calculateTotals();
+        }
+
+        function clickSelectRow(index) {
+            selectedRowIndex = index;
+            highlightRow(document.querySelectorAll('#returnTbody tr'));
+        }
+
+        function toggleReturnItem(index, isChecked) {
+            if (isChecked) {
+                const originalItem = currentInvoiceItems[index];
+                returnCart.push({
+                    index: index,
+                    barcode: originalItem.barcode || originalItem.code,
+                    name: originalItem.name,
+                    price: parseFloat(originalItem.price),
+                    qty: originalItem.qty,
+                    maxQty: originalItem.qty
+                });
+            } else {
+                returnCart = returnCart.filter(item => item.index !== index);
+            }
+            renderReturnTable();
+            document.getElementById('prodInput').focus(); // Jump to New Item scan
+        }
+
+        function adjustReturnQty(index, delta) {
+            const cartItem = returnCart.find(r => r.index === index);
+            if (!cartItem) return;
+
+            let newQty = cartItem.qty + delta;
+            if (newQty > cartItem.maxQty) newQty = cartItem.maxQty;
+            if (newQty < 1) newQty = 1;
+
+            cartItem.qty = newQty;
+            renderReturnTable();
+        }
+
+        // --- 4. NEW ITEM LOGIC ---
+        function addNewItem() {
+            const code = document.getElementById('prodInput').value.trim();
+            // Handle Code or Barcode match
+            const product = productsDB.find(p => (p.barcode && p.barcode === code) || p.code === code);
+
+            if (!product) {
+                alert("Product not found!");
+                document.getElementById('prodInput').select();
+                return;
+            }
+
+            const existing = newCart.find(i => i.barcode === (product.barcode || product.code));
+            if (existing) {
+                existing.qty++;
+            } else {
+                newCart.push({
+                    barcode: product.barcode || product.code,
+                    name: product.pName || product.name,
+                    price: parseFloat(product.sellPrice || product.price),
+                    qty: 1
+                });
+            }
+
+            document.getElementById('prodInput').value = "";
+            document.getElementById('prodInput').focus();
+            renderNewTable();
+        }
+
+        function renderNewTable() {
+            const tbody = document.getElementById('saleTbody');
+            tbody.innerHTML = "";
+
+            if (newCart.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999; padding:20px;">Scan items to add</td></tr>`;
+            }
+
+            newCart.forEach((item, index) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.price.toFixed(2)}</td>
+                        <td class="text-center">
+                            <button class="qty-btn" onclick="adjustNewQty(${index}, -1)">-</button>
+                            <span style="margin:0 5px; font-weight:bold;">${item.qty}</span>
+                            <button class="qty-btn" onclick="adjustNewQty(${index}, 1)">+</button>
+                        </td>
+                        <td align="right" style="color:var(--success); font-weight:bold;">
+                            ${(item.price * item.qty).toFixed(2)}
+                        </td>
+                        <td><i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="removeNewItem(${index})"></i></td>
+                    </tr>
+                `;
+            });
+            calculateTotals();
+        }
+
+        function adjustNewQty(index, delta) {
+            if (newCart[index].qty + delta < 1) return;
+            newCart[index].qty += delta;
+            renderNewTable();
+        }
+
+        function removeNewItem(index) {
+            newCart.splice(index, 1);
+            renderNewTable();
+        }
+
+        // --- 5. CALCULATIONS ---
+        function calculateTotals() {
+            let returnTotal = returnCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            let newTotal = newCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            let balance = newTotal - returnTotal;
+            netPayableAmount = balance;
+
+            // UI Updates
+            document.getElementById('lbl-return-total').innerText = "Credit: " + returnTotal.toFixed(2);
+            document.getElementById('lbl-sale-total').innerText = "Total: " + newTotal.toFixed(2);
+            document.getElementById('ft-credit').innerText = "-" + returnTotal.toFixed(2);
+            document.getElementById('ft-new').innerText = "+" + newTotal.toFixed(2);
+
+            const balDisplay = document.getElementById('ft-balance');
+            balDisplay.innerText = balance.toFixed(2);
+
+            if (balance < 0) {
+                balDisplay.style.color = "var(--danger)";
+                document.getElementById('status-label').innerText = "REFUND DUE";
+            } else {
+                balDisplay.style.color = "var(--primary-dark)";
+                document.getElementById('status-label').innerText = "NET PAYABLE";
+            }
+
+            // Enable Process Button if there is any activity
+            const hasActivity = (returnCart.length > 0 || newCart.length > 0);
+            document.getElementById('btn-process').disabled = !hasActivity;
+        }
+
+        // --- 6. MODAL & PAYMENT ---
+        function openPaymentModal() {
+            const overlay = document.getElementById('paymentModal');
+            overlay.style.display = 'flex';
+
+            let returnTotal = returnCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            let newTotal = newCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+            document.getElementById('mod-new').innerText = newTotal.toFixed(2);
+            document.getElementById('mod-ret').innerText = "- " + returnTotal.toFixed(2);
+            document.getElementById('mod-pay').innerText = netPayableAmount.toFixed(2);
+
+            const input = document.getElementById('payInputAmount');
+            const options = document.getElementById('payment-options');
+            const refundMsg = document.getElementById('refund-message');
+            const btnPrint = document.getElementById('btn-final-print');
+
+            input.value = "";
+            document.getElementById('mod-balance').innerText = "0.00";
+
+            if (netPayableAmount > 0) {
+                // Customer Pays
+                options.style.display = 'block';
+                refundMsg.style.display = 'none';
+                input.focus();
+                btnPrint.disabled = true; // Wait for input
+            } else {
+                // Refund or Zero
+                options.style.display = 'none';
+                if (netPayableAmount < 0) {
+                    refundMsg.style.display = 'block';
+                    refundMsg.innerHTML = `<i class="fas fa-exclamation-circle"></i> REFUND DUE: Rs. ${Math.abs(netPayableAmount).toFixed(2)}`;
+                } else {
+                    refundMsg.style.display = 'block';
+                    refundMsg.innerHTML = `<i class="fas fa-check-circle"></i> EVEN EXCHANGE. No Payment Required.`;
+                    refundMsg.style.color = "green";
+                    refundMsg.style.background = "#d1fae5";
+                }
+                btnPrint.disabled = false;
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+        }
+
+        function setPayMethod(method, el) {
+            selectedPayMethod = method;
+            document.querySelectorAll('.p-method').forEach(div => div.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function calcModalBalance() {
+            if (netPayableAmount <= 0) return;
+
+            const given = parseFloat(document.getElementById('payInputAmount').value) || 0;
+            const balance = given - netPayableAmount;
+
+            const balEl = document.getElementById('mod-balance');
+            balEl.innerText = balance.toFixed(2);
+
+            // Allow print even if partial payment (for credit) OR if fully paid
+            if (selectedPayMethod === 'LOAN') {
+                document.getElementById('btn-final-print').disabled = false;
+            } else {
+                // For Cash/Card, must pay full amount
+                if (given >= netPayableAmount) {
+                    balEl.style.color = "green";
+                    document.getElementById('btn-final-print').disabled = false;
+                } else {
+                    balEl.style.color = "red";
+                    document.getElementById('btn-final-print').disabled = true;
+                }
+            }
+        }
+
+        // --- 7. FINALIZE & PRINT ---
+        function finalizeTransaction() {
+            // A. Update Stock
+            // Return Items -> Increase Stock
+            returnCart.forEach(rItem => {
+                const p = productsDB.find(x => x.barcode === rItem.barcode);
+                if (p) {
+                    const currentStock = parseFloat(p.stock !== undefined ? p.stock : p.qty);
+                    p.stock = currentStock + rItem.qty;
+                }
+            });
+
+            // New Items -> Decrease Stock
+            newCart.forEach(nItem => {
+                const p = productsDB.find(x => x.barcode === nItem.barcode);
+                if (p) {
+                    const currentStock = parseFloat(p.stock !== undefined ? p.stock : p.qty);
+                    p.stock = currentStock - nItem.qty;
+                }
+            });
+
+            localStorage.setItem(DB_PRODUCTS, JSON.stringify(productsDB));
+
+            // B. Save Transaction
+            const exchangeID = "EXC-" + Date.now().toString().slice(-6);
+            const cashGiven = parseFloat(document.getElementById('payInputAmount').value) || 0;
+
+            const newSale = {
+                id: exchangeID,
+                date: new Date().toISOString(),
+                items: newCart,
+                returnedItems: returnCart,
+                total: netPayableAmount,
+                payMethod: (netPayableAmount > 0) ? selectedPayMethod : 'REFUND',
+                cashGiven: cashGiven,
+                refInvoice: refInvoiceID,
+                type: "EXCHANGE"
+            };
+
+            salesDB.push(newSale);
+            localStorage.setItem(DB_SALES, JSON.stringify(salesDB));
+
+            // C. Print
+            printReceipt(newSale);
+            closeModal();
+        }
+
+        function printReceipt(saleData) {
+            const dateStr = new Date().toLocaleString();
+
+            // Build Item Rows
+            let returnRows = "";
+            if (saleData.returnedItems.length > 0) {
+                returnRows += `<tr><td colspan="4" style="border-bottom:1px dashed #000; padding-top:5px; font-weight:bold;">RETURNED ITEMS</td></tr>`;
+                saleData.returnedItems.forEach(i => {
+                    returnRows += `
+                        <tr>
+                            <td>${i.name}</td>
+                            <td>${i.qty}</td>
+                            <td>${i.price}</td>
+                            <td align="right">-${(i.qty * i.price).toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            let newRows = "";
+            if (saleData.items.length > 0) {
+                newRows += `<tr><td colspan="4" style="border-bottom:1px dashed #000; padding-top:5px; font-weight:bold;">NEW ITEMS</td></tr>`;
+                saleData.items.forEach(i => {
+                    newRows += `
+                        <tr>
+                            <td>${i.name}</td>
+                            <td>${i.qty}</td>
+                            <td>${i.price}</td>
+                            <td align="right">${(i.qty * i.price).toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // Calculations for Footer
+            const retTotal = saleData.returnedItems.reduce((s, i) => s + (i.price * i.qty), 0);
+            const newTotal = saleData.items.reduce((s, i) => s + (i.price * i.qty), 0);
+            const balanceDue = saleData.total; // Net Payable
+
+            let footer = "";
+            if (balanceDue > 0) {
+                footer = `
+                    <tr><td colspan="3" align="right">Subtotal (New):</td><td align="right">${newTotal.toFixed(2)}</td></tr>
+                    <tr><td colspan="3" align="right">Less Return Credit:</td><td align="right">-${retTotal.toFixed(2)}</td></tr>
+                    <tr style="font-weight:bold; font-size:14px;"><td colspan="3" align="right">NET PAYABLE:</td><td align="right">${balanceDue.toFixed(2)}</td></tr>
+                    <tr><td colspan="4" style="border-bottom:1px dashed #000;"></td></tr>
+                    <tr><td colspan="3" align="right">Paid by (${saleData.payMethod}):</td><td align="right">${saleData.cashGiven.toFixed(2)}</td></tr>
+                    <tr><td colspan="3" align="right">Balance:</td><td align="right">${(saleData.cashGiven - balanceDue).toFixed(2)}</td></tr>
+                `;
+            } else {
+                footer = `
+                    <tr><td colspan="3" align="right">Subtotal (New):</td><td align="right">${newTotal.toFixed(2)}</td></tr>
+                    <tr><td colspan="3" align="right">Less Return Credit:</td><td align="right">-${retTotal.toFixed(2)}</td></tr>
+                    <tr style="font-weight:bold; font-size:14px;"><td colspan="3" align="right">REFUND DUE:</td><td align="right">${Math.abs(balanceDue).toFixed(2)}</td></tr>
+                `;
+            }
+
+            const html = `
+                <div style="font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.2;">
+                    <center>
+                        <h2 style="margin:0;">${shopData.name}</h2>
+                        <div>${shopData.address}</div>
+                        <div>Tel: ${shopData.phone}</div>
+                        <br>
+                        <div style="font-weight:bold; font-size:14px;">EXCHANGE BILL</div>
+                        <div>Inv: ${saleData.id}</div>
+                        <div>Ref Inv: ${saleData.refInvoice}</div>
+                        <div>Date: ${dateStr}</div>
+                    </center>
+                    <hr style="border-top: 1px dashed black;">
+                    <table width="100%" style="font-size: 12px;">
+                        <thead>
+                            <tr style="border-bottom: 1px dashed black;">
+                                <th align="left">Item</th>
+                                <th align="left">Qty</th>
+                                <th align="left">Rate</th>
+                                <th align="right">Amt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${returnRows}
+                            ${newRows}
+                        </tbody>
+                    </table>
+                    <hr style="border-top: 1px dashed black;">
+                    <table width="100%" style="font-size: 12px;">
+                        ${footer}
+                    </table>
+                    <br>
+                    <center>
+                        <div>Thank you for shopping!</div>
+                        <div style="font-size:10px;">System by SmartPOS</div>
+                    </center>
+                </div>
+            `;
+
+            document.getElementById('print-area').innerHTML = html;
+            window.print();
+
+            // Reload after print
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+    </script>
+</body>
+
+</html>

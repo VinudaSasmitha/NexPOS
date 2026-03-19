@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Modern POS - PRO Edition</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="global.css">
+    <style>
+        :root {
+            --primary: #1b5e20;
+            --secondary: #4caf50;
+            --light-green: #e8f5e9;
+            --white: #ffffff;
+            --gray: #f5f5f5;
+            --text: #333;
+            --border: #e0e0e0;
+            --danger: #d32f2f;
+            --warning: #ff9800;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            background: var(--gray);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            color: var(--text);
+        }
+
+        /* --- Header --- */
+        .header {
+            background: var(--white);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--secondary);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+        }
+
+        .header h2 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 22px;
+            text-transform: uppercase;
+        }
+
+        .header small {
+            display: block;
+            color: #666;
+            font-size: 12px;
+        }
+
+        /* Mode Selector Styles */
+        .mode-box {
+            text-align: center;
+            background: var(--light-green);
+            padding: 5px 15px;
+            border-radius: 8px;
+            border: 1px solid #c8e6c9;
+        }
+
+        .mode-select {
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid var(--secondary);
+            font-weight: bold;
+            color: var(--primary);
+            outline: none;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        /* --- Main Layout --- */
+        .main-container {
+            flex: 1;
+            padding: 15px;
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 15px;
+            overflow: hidden;
+        }
+
+        /* --- Responsive Logic --- */
+        @media (max-width: 900px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr auto;
+                padding: 10px;
+                gap: 10px;
+            }
+
+            .sidebar {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 10px;
+                overflow: visible;
+            }
+
+            .total-box,
+            .hot-items,
+            .btn-finish {
+                flex: 1;
+                min-width: 150px;
+            }
+
+            .hot-items {
+                display: none;
+            }
+
+            .header h2 {
+                font-size: 18px;
+            }
+
+            #clockDisp {
+                font-size: 11px;
+            }
+        }
+
+        /* --- Left Side: Cart --- */
+        .card {
+            background: var(--white);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .search-area {
+            padding: 15px;
+            position: relative;
+            background: var(--light-green);
+            border-bottom: 1px solid #c8e6c9;
+        }
+
+        #mainSearch {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #a5d6a7;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        #mainSearch:focus {
+            border-color: var(--secondary);
+        }
+
+        .sug-list {
+            position: absolute;
+            top: 65px;
+            left: 15px;
+            right: 15px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            z-index: 100;
+            max-height: 250px;
+            overflow-y: auto;
+            display: none;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .sug-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--gray);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .sug-item:hover {
+            background: var(--light-green);
+        }
+
+        .table-area {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f1f8e9;
+            padding: 12px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 12px;
+            color: var(--primary);
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--gray);
+            font-size: 14px;
+        }
+
+        /* --- Right Side: Sidebar --- */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .total-box {
+            background: var(--primary);
+            color: var(--white);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .total-box h1 {
+            margin: 5px 0;
+            font-size: 36px;
+        }
+
+        .hot-items {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 15px;
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+
+        .hot-btn {
+            padding: 10px;
+            margin-bottom: 6px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--gray);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .hot-btn:hover {
+            background: var(--light-green);
+            border-color: var(--secondary);
+        }
+
+        .hot-btn.low-stock {
+            border-left: 4px solid var(--danger);
+            background: #fff0f0;
+        }
+
+        .hot-btn.out-stock {
+            opacity: 0.6;
+            pointer-events: none;
+            border-color: #ccc;
+        }
+
+        .btn-finish {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: var(--white);
+            border: none;
+            padding: 18px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-finish:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        /* --- Modals --- */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(2px);
+        }
+
+        .modal-content {
+            background: var(--white);
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-top: 5px solid var(--secondary);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .field {
+            margin-bottom: 12px;
+            position: relative;
+            /* Added for suggestions */
+        }
+
+        .field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .field input,
+        .field select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        /* --- Toast Notification --- */
+        #toast {
+            visibility: hidden;
+            min-width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 50px;
+            padding: 12px;
+            position: fixed;
+            z-index: 10000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 14px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        @keyframes fadein {
+            from {
+                bottom: 0;
+                opacity: 0;
+            }
+
+            to {
+                bottom: 30px;
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeout {
+            from {
+                bottom: 30px;
+                opacity: 1;
+            }
+
+            to {
+                bottom: 0;
+                opacity: 0;
+            }
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #printArea,
+            #printArea * {
+                visibility: visible;
+            }
+
+            #printArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 58mm;
+                padding: 0;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <div>
+            <h2 id="bizDisp">POS SYSTEM</h2>
+            <small id="bizSub">Admin Panel</small>
+        </div>
+
+        <div class="mode-box">
+            <div id="clockDisp" style="font-size:12px; font-weight:bold; color:var(--primary); margin-bottom:5px;">
+                Loading Time...</div>
+            <select id="priceMode" class="mode-select">
+                <option value="RETAIL">🛒 Retail Price</option>
+                <option value="WHOLESALE">🏭 Wholesale Price</option>
+            </select>
+        </div>
+
+        <div id="invDisp"
+            style="font-weight:800; color:var(--primary); font-size:16px; background:var(--light-green); padding:5px 12px; border-radius:15px;">
+            INV-LOAD...</div>
+    </div>
+
+    <div class="main-container">
+        <div class="card">
+            <div class="search-area">
+                <i class="fas fa-search" style="position:absolute; right:30px; top:28px; color:#aaa;"></i>
+                <input type="text" id="mainSearch" placeholder="Scan Barcode / Type Name..." autocomplete="off">
+                <div id="itemSugs" class="sug-list"></div>
+            </div>
+            <div class="table-area">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:40%">ITEM</th>
+                            <th style="width:15%">PRICE</th>
+                            <th style="width:10%">QTY</th>
+                            <th style="width:15%">DISC</th>
+                            <th style="width:15%">TOTAL</th>
+                            <th style="width:5%"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="cartItems"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="total-box">
+                <small>NET TOTAL</small>
+                <h1>Rs. <span id="grandTotal">0.00</span></h1>
+            </div>
+
+            <div class="hot-items">
+                <h4><i class="fas fa-fire"></i> Hot Items</h4>
+                <div id="hotList"></div>
+            </div>
+
+            <button class="btn-finish" onclick="openPayModal()">
+                CHECKOUT (ENTER)
+            </button>
+        </div>
+    </div>
+
+    <div id="qtyModal" class="modal">
+        <div class="modal-content">
+            <h3 id="popName"
+                style="margin:0 0 15px 0; color:var(--primary); border-bottom:1px solid #eee; padding-bottom:10px;">Item
+            </h3>
+            <div class="field"><label>Price (Rs)</label><input type="number" id="popPrice" step="0.01"></div>
+            <div class="field"><label>Qty (Stock: <span id="stockDisp"
+                        style="color:var(--primary); font-weight:bold;">0</span>)</label><input type="number"
+                    id="popQty" value="1"></div>
+            <div class="field"><label>Discount (Rs)</label><input type="number" id="popDisc" value="0"></div>
+            <button class="btn-finish" onclick="addToCart()">ADD</button>
+        </div>
+    </div>
+
+    <div id="payModal" class="modal">
+        <div class="modal-content">
+            <h2 style="text-align:center; margin:0 0 15px 0; color:var(--primary);">PAYMENT</h2>
+            <div class="field">
+                <label>Method</label>
+                <select id="pMode" onchange="togglePay()">
+                    <option value="CASH">CASH</option>
+                    <option value="CARD">CARD</option>
+                    <option value="LOAN">LOAN / CREDIT</option>
+                </select>
+            </div>
+            <div id="cashGrp">
+                <div class="field"><label>Given Amount</label><input type="number" id="cashIn" oninput="calcBal()">
+                </div>
+                <div style="text-align:right; font-weight:800; color:var(--danger); font-size:18px;">Bal: Rs. <span
+                        id="balDisp">0.00</span></div>
+            </div>
+
+            <div id="loanGrp" style="display:none;">
+                <div class="field">
+                    <label>Customer Name</label>
+                    <input type="text" id="custName" onkeyup="suggestCustomers()" autocomplete="off">
+                    <div id="custSugs" class="sug-list" style="top:60px;"></div>
+                </div>
+                <div class="field"><label>Phone Number</label><input type="number" id="custPhone"></div>
+            </div>
+
+            <button class="btn-finish" style="margin-top:15px;" onclick="finalizeSale()">PRINT & SAVE</button>
+        </div>
+    </div>
+
+    <div id="printArea"></div>
+    <div id="toast"></div>
+
+
+    <script>
+
+        let drawerOpened = false;
+
+        // --- HELPERS ---
+        function padLeft(value, width = 0) {
+            value = String(value);
+            width = Number(width) || 0;
+            if (value.length >= width) return value;
+            return ' '.repeat(Math.max(0, width - value.length)) + value;
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function safeParse(key, defaultValue) {
+            try {
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : defaultValue;
+            } catch (e) {
+                console.error("Data error", e);
+                return defaultValue;
+            }
+        }
+
+        // --- CONFIG & KEYS ---
+        const DB_PRODUCTS = 'pos_products';
+        const DB_BIZ = 'pos_shop_data';
+        const DB_SALES = 'pos_sales';
+
+        let cart = [];
+        let activeItem = null;
+
+        // --- INIT ---
+        window.onload = () => {
+            loadBizInfo();
+            genInvID();
+            renderHotItems();
+            startClock();
+            document.getElementById('mainSearch').focus();
+        };
+
+        // --- CLOCK FUNCTION ---
+        function startClock() {
+            function update() {
+                const now = new Date();
+                const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+                document.getElementById('clockDisp').innerText = now.toLocaleString('en-US', options);
+            }
+            setInterval(update, 5000);
+            update();
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById("toast");
+            t.innerText = msg; t.className = "show";
+            setTimeout(() => t.className = t.className.replace("show", ""), 3000);
+        }
+
+        function loadBizInfo() {
+            const biz = safeParse(DB_BIZ, { name: "MY STORE", phone: "000", address: "" });
+            document.getElementById('bizDisp').innerText = biz.name;
+            document.getElementById('bizSub').innerText = biz.phone;
+        }
+
+        function genInvID() {
+            const datePart = new Date().toISOString().slice(2, 10).replace(/-/g, '');
+            const randPart = Math.floor(5000 + Math.random() * 9000);
+            document.getElementById('invDisp').innerText = `INV-${datePart}-${randPart}`;
+        }
+
+        function renderHotItems() {
+            const db = safeParse(DB_PRODUCTS, []);
+            const sales = safeParse(DB_SALES, []);
+            const counts = {};
+
+            sales.forEach(s => {
+                if (Array.isArray(s.items)) {
+                    s.items.forEach(i => counts[i.barcode] = (counts[i.barcode] || 0) + i.qty);
+                }
+            });
+
+            const topCodes = Object.keys(counts).sort((a, b) => counts[b] - counts[a]).slice(0, 6);
+            const list = document.getElementById('hotList');
+
+            list.innerHTML = topCodes.map(code => {
+                const item = db.find(i => String(i.barcode) === String(code));
+                if (!item) return '';
+
+                const stock = parseFloat(item.stock || 0);
+                let cssClass = 'hot-btn';
+                let icon = '<i class="fas fa-box" style="color:#ccc"></i>';
+
+                if (stock <= 0) { cssClass += ' out-stock'; icon = '<i class="fas fa-ban" style="color:red"></i>'; }
+                else if (stock < 5) { cssClass += ' low-stock'; icon = '<i class="fas fa-exclamation-triangle" style="color:var(--danger)"></i>'; }
+
+                return `<div class="${cssClass}" onclick="selectItem('${escapeHtml(item.barcode)}')">
+                        <span>${icon} ${escapeHtml(item.pName)}</span>
+                        <small>QTY: ${stock}</small>
+                    </div>`;
+            }).join('') || '<div style="text-align:center;color:#aaa;padding:10px;">No Data Yet</div>';
+        }
+
+        // --- SEARCH & SELECT PRODUCTS ---
+        document.getElementById('mainSearch').addEventListener('input', function () {
+            const val = this.value.toLowerCase().trim();
+            const box = document.getElementById('itemSugs');
+            const db = safeParse(DB_PRODUCTS, []);
+
+            if (val.length < 1) { box.style.display = 'none'; return; }
+
+            const matches = db.filter(i =>
+                String(i.barcode).toLowerCase().includes(val) ||
+                String(i.pName || i.name || "").toLowerCase().includes(val)
+            ).slice(0, 8);
+
+            box.innerHTML = matches.map(i => `
+            <div class="sug-item" onclick="selectItem('${escapeHtml(i.barcode)}')">
+                <span>${escapeHtml(i.pName || i.name || "Item")}</span>
+                <b>Rs. ${parseFloat(i.sellPrice || i.price).toFixed(2)}</b>
+            </div>
+        `).join('');
+            box.style.display = matches.length ? 'block' : 'none';
+        });
+        function selectItem(barcode) {
+            const db = safeParse(DB_PRODUCTS, []);
+            activeItem = db.find(i => String(i.barcode) === String(barcode));
+            if (!activeItem) return;
+
+            document.getElementById('itemSugs').style.display = 'none';
+            document.getElementById('mainSearch').value = '';
+
+            const mode = document.getElementById('priceMode').value;
+            let finalPrice = parseFloat(activeItem.sellPrice || activeItem.price || 0);
+
+            // Wholesale Price Logic
+            if (mode === 'WHOLESALE') {
+                const wPrice = parseFloat(activeItem.wholePrice);
+                if (activeItem.wholePrice && !isNaN(wPrice) && wPrice > 0) {
+                    finalPrice = wPrice;
+                    showToast("Wholesale Price Applied");
+                } else {
+                    showToast("No Wholesale Price - Using Retail");
+                }
+            }
+
+            document.getElementById('popName').innerText = activeItem.pName || activeItem.name;
+            document.getElementById('popPrice').value = finalPrice;
+            document.getElementById('stockDisp').innerText = activeItem.stock || 0;
+            document.getElementById('popQty').value = 1;
+
+            // --- මෙන්න මේ කොටස තමයි අලුතෙන් දැම්මේ ---
+            // Stock එකේ තියෙන Discount % එක අරගෙන මුදලක් බවට හරවනවා
+            let savedDiscPercentage = parseFloat(activeItem.discount) || 0;
+            let discountAmount = 0;
+
+            if (savedDiscPercentage > 0) {
+                // (මිල x ප්‍රතිශතය) / 100
+                discountAmount = (finalPrice * savedDiscPercentage) / 100;
+            }
+
+            // ගණනය කරපු Discount එක Input එකට දානවා (දශමස්ථාන 2ක් එක්ක)
+            document.getElementById('popDisc').value = discountAmount.toFixed(2);
+            // ------------------------------------------------
+
+            document.getElementById('qtyModal').style.display = 'flex';
+            setTimeout(() => document.getElementById('popQty').focus(), 100);
+        }
+
+        function addToCart() {
+            const price = parseFloat(document.getElementById('popPrice').value) || 0;
+            const qty = parseFloat(document.getElementById('popQty').value) || 0;
+            const disc = parseFloat(document.getElementById('popDisc').value) || 0;
+            const stock = parseFloat(activeItem.stock || 0);
+
+            if (qty <= 0) { alert("Qty must be > 0"); return; }
+            if (price < 0) { alert("Price cannot be negative"); return; }
+            if (disc > (price * qty)) { alert("Discount exceeds Total Price!"); return; }
+
+            const existingItem = cart.find(i => String(i.barcode) === String(activeItem.barcode));
+            const currentCartQty = existingItem ? existingItem.qty : 0;
+            const totalRequested = currentCartQty + qty;
+
+            if (totalRequested > stock) {
+                alert(`❌ NOT ENOUGH STOCK!\n\nAvailable Stock: ${stock}\nRequested Qty: ${totalRequested}`);
+                return;
+            }
+
+            const total = (price * qty) - disc;
+            if (existingItem) {
+                existingItem.price = price;
+                existingItem.qty += qty;
+                existingItem.disc += disc;
+                existingItem.total = (existingItem.price * existingItem.qty) - existingItem.disc;
+            } else {
+                cart.push({
+                    barcode: activeItem.barcode,
+                    name: activeItem.pName || activeItem.name,
+                    price: price,
+                    qty: qty,
+                    disc: disc,
+                    total: total
+                });
+            }
+
+            updateUI();
+            document.getElementById('qtyModal').style.display = 'none';
+            document.getElementById('mainSearch').focus();
+        }
+
+        function updateUI() {
+            const tbody = document.getElementById('cartItems');
+            tbody.innerHTML = '';
+            let grand = 0;
+
+            cart.forEach((item, i) => {
+                grand += item.total;
+                tbody.innerHTML += `
+                <tr>
+                    <td style="font-weight:600">${escapeHtml(item.name)}</td>
+                    <td>${item.price.toFixed(2)}</td>
+                    <td>${item.qty}</td>
+                    <td>${item.disc.toFixed(2)}</td>
+                    <td style="font-weight:bold">${item.total.toFixed(2)}</td>
+                    <td><i class="fas fa-times" style="color:var(--danger); cursor:pointer" onclick="remItem(${i})"></i></td>
+                </tr>`;
+            });
+            document.getElementById('grandTotal').innerText = grand.toFixed(2);
+        }
+
+        function remItem(i) {
+            cart.splice(i, 1);
+            updateUI();
+        }
+
+        // --- PAYMENT & CUSTOMER LOGIC ---
+        function openPayModal() {
+            if (cart.length === 0) { alert("Cart is empty!"); return; }
+            document.getElementById('payModal').style.display = 'flex';
+            document.getElementById('cashIn').value = '';
+            document.getElementById('balDisp').innerText = '0.00';
+            setTimeout(() => document.getElementById('cashIn').focus(), 100);
+        }
+
+        function togglePay() {
+            const mode = document.getElementById('pMode').value;
+            document.getElementById('cashGrp').style.display = (mode === 'CASH') ? 'block' : 'none';
+            document.getElementById('loanGrp').style.display = (mode === 'LOAN') ? 'block' : 'none';
+        }
+
+        function suggestCustomers() {
+            const val = document.getElementById('custName').value.toLowerCase().trim();
+            const box = document.getElementById('custSugs');
+            const sales = safeParse(DB_SALES, []);
+
+            if (val.length < 1) { box.style.display = 'none'; return; }
+
+            const uniqueCust = {};
+            sales.forEach(s => {
+                if (s.customer && s.mode === 'LOAN') {
+                    uniqueCust[s.customer] = s.phone || '';
+                }
+            });
+
+            const matches = Object.keys(uniqueCust).filter(name => name.toLowerCase().includes(val));
+
+            if (matches.length === 0) { box.style.display = 'none'; return; }
+
+            box.innerHTML = matches.map(name => `
+            <div class="sug-item" onclick="pickCustomer('${escapeHtml(name)}', '${uniqueCust[name]}')">
+                <span>${escapeHtml(name)}</span>
+                <small>${uniqueCust[name]}</small>
+            </div>
+        `).join('');
+            box.style.display = 'block';
+        }
+
+        function pickCustomer(name, phone) {
+            document.getElementById('custName').value = name;
+            document.getElementById('custPhone').value = phone;
+            document.getElementById('custSugs').style.display = 'none';
+        }
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('#custSugs') && e.target.id !== 'custName') {
+                document.getElementById('custSugs').style.display = 'none';
+            }
+            if (!e.target.closest('#itemSugs') && e.target.id !== 'mainSearch') {
+                document.getElementById('itemSugs').style.display = 'none';
+            }
+        });
+        function calcBal() {
+            const total = parseFloat(document.getElementById('grandTotal').innerText);
+            const given = parseFloat(document.getElementById('cashIn').value);
+
+            if (isNaN(given)) {
+                document.getElementById('balDisp').innerText = "0.00";
+                return;
+            }
+
+            const bal = given - total;
+            document.getElementById('balDisp').innerText = bal.toFixed(2);
+
+            // 🔥 OPEN CASH DRAWER LOGIC
+            const mode = document.getElementById('pMode').value;
+
+            if (mode === 'CASH' && bal >= 0 && !drawerOpened) {
+                drawerOpened = true;
+                openCashDrawer();
+                showToast("💰 Cash Drawer Opened");
+            }
+
+        }
+
+
+        function cleanOldSales() {
+            try {
+                const sales = safeParse(DB_SALES, []);
+                const now = new Date();
+
+                const filtered = sales.filter(sale => {
+                    const mode = (sale.mode || '').toUpperCase();
+
+                    // Keep loan/credit bills permanently
+                    if (mode === 'LOAN' || mode === 'LOAN_PAY') return true;
+
+                    // Keep if no date
+                    if (!sale.date) return true;
+
+                    // Calculate days difference correctly
+                    const saleDate = new Date(sale.date);
+                    const diffDays = (now - saleDate) / (1000 * 60 * 60 * 24); // ✅ correct
+
+                    // Only keep if within 10 days
+                    return diffDays <= 10;
+                });
+
+                localStorage.setItem(DB_SALES, JSON.stringify(filtered));
+            } catch (err) {
+                console.error("cleanOldSales error:", err);
+            }
+        }
+
+        function finalizeSale() {
+            const cashier = sessionStorage.getItem('currentUser') || "Admin";
+            cleanOldSales();
+
+            const total = parseFloat(document.getElementById('grandTotal').innerText);
+            const mode = document.getElementById('pMode').value;
+            const invID = document.getElementById('invDisp').innerText;
+            const cash = parseFloat(document.getElementById('cashIn').value) || 0;
+            const cName = document.getElementById('custName').value;
+            const cPhone = document.getElementById('custPhone').value;
+
+            if (mode === 'CASH') {
+                if (cash < total) {
+                    alert("⚠️ Insufficient Cash! / මුදල් මදි!\n\nPlease enter the correct amount.");
+                    return;
+                }
+            }
+
+            if (mode === 'LOAN' && !cName) {
+                alert("Please enter Customer Name for Credit Sales!");
+                return;
+            }
+
+            const db = safeParse(DB_PRODUCTS, []);
+            cart.forEach(cItem => {
+                const pIndex = db.findIndex(p => String(p.barcode) === String(cItem.barcode));
+                if (pIndex > -1) {
+                    let st = parseFloat(db[pIndex].stock || 0);
+                    db[pIndex].stock = st - cItem.qty;
+                }
+            });
+            localStorage.setItem(DB_PRODUCTS, JSON.stringify(db));
+
+            const sales = safeParse(DB_SALES, []);
+            sales.push({
+                id: invID,
+                date: new Date().toISOString(),
+                items: JSON.parse(JSON.stringify(cart)),
+                total: total,
+                mode: mode,
+                customer: cName,
+                phone: cPhone,
+                cashier: cashier
+            });
+            localStorage.setItem(DB_SALES, JSON.stringify(sales));
+
+            const biz = safeParse(DB_BIZ, { name: "MY STORE", address: "", phone: "" });
+            printBill(biz, cart, total, invID, mode, cash);
+
+            function saveSale(sale) {
+                const DB_SALES = 'pos_sales';
+                const sales = JSON.parse(localStorage.getItem(DB_SALES)) || [];
+
+                // Push new sale
+                sales.push(sale);
+
+                // --- Auto archive old bills ---
+                const MAX_BILLS = 3000; // 3000 bills limit
+                if (sales.length > MAX_BILLS) {
+                    // remove oldest 1000 bills
+                    sales.splice(0, sales.length - MAX_BILLS);
+                }
+
+                // --- Monthly backup ---
+                const backupKey = 'pos_sales_backup_' + new Date().toISOString().slice(0, 7); // YYYY-MM
+                localStorage.setItem(backupKey, JSON.stringify(sales));
+
+                localStorage.setItem(DB_SALES, JSON.stringify(sales));
+            }
+
+        }
+
+        function printBill(biz, items, total, inv, mode, cash) {
+            const cashier = sessionStorage.getItem('currentUser') || "Admin";
+            const dateStr = new Date().toLocaleString();
+            const balance = (typeof cash === 'number') ? (cash - total) : 0;
+
+            // --- NEW: Calculate Total Qty & Total Discount ---
+            let totalQty = 0;
+            let totalDiscount = 0;
+
+            items.forEach(it => {
+                totalQty += Number(it.qty || 0);
+                totalDiscount += Number(it.disc || 0);
+            });
+            // ------------------------------------------------
+
+            const html = `
+        <div id="thermal-receipt" style="width:58mm; padding:6px; box-sizing:border-box; font-family: 'Courier New', monospace; color:#000;">
+        <style>
+        #thermal-receipt * { box-sizing: border-box; }
+        .center { text-align:center; }
+        .right { text-align:right; }
+        .left { text-align:left; }
+        .muted { color:#555; font-size:10px; }
+        h1.store { margin:0; font-size:14px; letter-spacing:0.5px; }
+        .meta { font-size:11px; margin-top:6px; margin-bottom:6px; }
+        .line { border-top:1px dashed #000; margin:8px 0; }
+        .items { width:100%; font-size:11px; }
+        .item-name { display:block; font-weight:500; }
+        .item-sub {
+            font-family: 'Courier New', monospace;
+            white-space: pre;
+            display: block;
+        }
+        .totals { margin-top:8px; font-size:12px; }
+        .totals .row { display:flex; justify-content:space-between; margin:4px 0; }
+        .footer { font-size:10px; text-align:center; margin-top:8px; color:#333; }
+        </style>
+
+        <div class="center">
+        <h1 class="store">${escapeHtml(biz.name || 'MY STORE')}</h1>
+        ${biz.address ? `<div class="muted">${escapeHtml(biz.address)}</div>` : ''}
+        <div class="muted">Tel: ${escapeHtml(biz.phone || '')}</div>
+        </div>
+
+        <div class="line"></div>
+
+        <div class="meta">
+        <div style="display:flex; justify-content:space-between;">
+            <div>INV: <b>${inv}</b></div>
+            <div>User: <b>${escapeHtml(cashier)}</b></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-top:4px;">
+            <div class="muted">Date: ${dateStr}</div>
+            <div class="muted">Mode: <b>${mode}</b></div>
+        </div>
+        
+        <div class="line"> 
+<div style="
+    font-family:'Courier New', monospace;
+    font-size:11px;
+    white-space:pre;
+">
+${padLeft('Items',)}${padLeft('QTY', 6)} × ${padLeft('PRICE', 5)}  = ${padLeft('TOTAL', 9)}
+${'-'.repeat(32)}
+</div>
+
+        <div class="items">
+        ${items.map(it => {
+                const name = (it.name || '').toString().trim();
+                const qty = Number(it.qty || 0);
+                const price = Number(it.price || it.unitPrice || 0);
+                const disc = Number(it.disc || 0);
+                const lineTotal = Number(it.total || (qty * price - disc));
+
+                return `
+<div class="item-row" style="margin-bottom: 0px; padding: 0;"> 
+    <div class="item-name" style="
+        font-family: monospace; 
+        display: block; 
+        line-height: 0.9; 
+        margin: 0; 
+        padding: 0;
+    ">${escapeHtml(name)}</div>
+
+    <div class="item-sub" style="
+        font-family: monospace;
+        white-space: pre;
+        display: block;
+        line-height: 0.9; 
+        margin-top: -1px; 
+        padding: 0;
+    ">${padLeft(qty, 12)}  × ${padLeft(price.toFixed(2), 6)} = ${padLeft(lineTotal.toFixed(2), 7)}
+    </div>
+        </div>
+        `;
+            }).join('')}
+        </div>
+
+        <div class="line"></div>
+
+        <div class="totals">
+        
+        <div class="row" style="font-weight:bold; font-size:11px;">
+            <div>Total Qty</div>
+            <div>${totalQty}</div>
+        </div>
+        <div class="row" style="color:#000;">
+            <div>Total Discount</div>
+            <div>-${totalDiscount.toFixed(2)}</div>
+        </div>
+        <div class="line" style="margin:4px 0;"></div>
+        <div class="row"><div>SUBTOTAL</div><div><b>${total.toFixed(2)}</b></div></div>
+        ${mode === 'CASH' ? `<div class="row"><div>Cash</div><div>${cash.toFixed(2)}</div></div>
+                                <div class="row"><div>Change</div><div>${balance.toFixed(2)}</div></div>` : ''}
+        ${mode === 'LOAN' ? `<div class="row"><div style="width:100%; text-align:center; font-weight:700; border:1px solid #000; padding:4px 0;">CREDIT BILL</div></div>` : ''}
+        </div>
+
+        <div class="line"></div>
+
+        <div class="footer">
+        Thank you for shopping!
+        <div> මෙම බිල්පතෙහි යම් වරදක් ඇත්නම් දින 7ක් ඇතුළත
+             බිල්පත සමඟ ඉදිරිපත් කරන්න .ශීතකල ආහාර 
+               මාරු කරනු නොලැබේ.</div>
+
+        <div style="margin-top:6px; font-size:10px,font-family:bold;">Software by Vinuda Sasmitha</div>
+        </div>
+        </div>
+        `;
+
+            const printArea = document.getElementById('printArea');
+            if (!printArea) {
+                console.error("No #printArea element found.");
+                return;
+            }
+            printArea.innerHTML = html;
+            window.print();
+            setTimeout(() => location.reload(), 800);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+                document.getElementById('mainSearch').focus();
+            }
+            if (e.key === 'Enter') {
+                if (document.getElementById('qtyModal').style.display === 'flex') addToCart();
+                else if (document.getElementById('payModal').style.display === 'flex') finalizeSale();
+                else if (document.getElementById('mainSearch').value === '' && cart.length > 0) openPayModal();
+                else {
+                    const first = document.querySelector('#itemSugs .sug-item');
+                    if (first && document.getElementById('itemSugs').style.display === 'block') first.click();
+                }
+            }
+        });
+
+        window.addEventListener('storage', () => {
+            renderHotItems();
+            showToast("System Synced with Stock");
+        });
+
+        function applyAdvance(custName, totalAmount) {
+            const sales = safeParse('pos_sales', []);
+            let totalAdvance = 0;
+
+            sales.forEach(s => {
+                if (s.customer === custName) {
+                    if (s.mode === 'ADVANCE') totalAdvance += parseFloat(s.total || 0);
+                    if (s.mode === 'LOAN_PAY') totalAdvance -= parseFloat(s.total || 0);
+                }
+            });
+
+            const applied = Math.min(totalAdvance, totalAmount);
+
+            if (applied > 0) {
+                sales.push({
+                    id: `ADV-${Date.now()}`,
+                    date: new Date().toISOString(),
+                    items: [],
+                    total: applied,
+                    mode: 'LOAN_PAY',
+                    customer: custName,
+                    phone: document.getElementById('custPhone').value
+                });
+                localStorage.setItem('pos_sales', JSON.stringify(sales));
+            }
+
+            return totalAmount - applied;
+        }
+    </script>
+</body>
+
+</html>

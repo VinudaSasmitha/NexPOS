@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Member - POS v3.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+        <h2 class="text-2xl font-bold mb-6 text-center text-indigo-700">Add New Member</h2>
+
+        <form id="registerForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                <input type="text" id="name"
+                    class="w-full mt-1 p-2 border rounded-md focus:ring-indigo-500 border-gray-300"
+                    placeholder="Vinuda Dev" required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Email Address</label>
+                <input type="email" id="email"
+                    class="w-full mt-1 p-2 border rounded-md focus:ring-indigo-500 border-gray-300"
+                    placeholder="example@mail.com" required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Phone Number</label>
+                <input type="text" id="phone"
+                    class="w-full mt-1 p-2 border rounded-md focus:ring-indigo-500 border-gray-300"
+                    placeholder="0712345678">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" id="password"
+                    class="w-full mt-1 p-2 border rounded-md focus:ring-indigo-500 border-gray-300"
+                    placeholder="••••••••" required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Assign Role</label>
+                <select id="roleId" class="w-full mt-1 p-2 border rounded-md bg-white border-gray-300">
+                    <option value="1">Admin</option>
+                    <option value="2">Cashier</option>
+                    <option value="3">Sales Manager</option>
+                    <option value="4">Branch Manager</option>
+                </select>
+            </div>
+
+            <button type="submit"
+                class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-300 shadow-md">
+                Register Member
+            </button>
+        </form>
+
+        <div id="responseMsg" class="mt-4 text-center hidden p-2 rounded-md"></div>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msgDiv = document.getElementById('responseMsg');
+            const token = localStorage.getItem('pos_token');
+
+            if (!token) {
+                alert("⛔ Error: You must be logged in as an Admin!");
+                return;
+            }
+
+            const formData = {
+                Name: document.getElementById('name').value,
+                Email: document.getElementById('email').value,
+                Phone_Number: document.getElementById('phone').value,
+                Password: document.getElementById('password').value,
+                Role_ID: parseInt(document.getElementById('roleId').value)
+            };
+
+            try {
+                const response = await fetch('http://localhost:5000/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                msgDiv.classList.remove('hidden');
+                if (response.ok) {
+                    msgDiv.innerText = "✅ " + result.message;
+                    msgDiv.className = "mt-4 text-center p-2 bg-green-100 text-green-700 rounded-md";
+                    document.getElementById('registerForm').reset();
+                } else {
+                    msgDiv.innerText = "❌ " + (result.message || "Registration failed");
+                    msgDiv.className = "mt-4 text-center p-2 bg-red-100 text-red-700 rounded-md";
+                }
+            } catch (err) {
+                console.error("Error:", err);
+                alert("Server connection failed!");
+            }
+        });
+    </script>
+</body>
+
+</html>

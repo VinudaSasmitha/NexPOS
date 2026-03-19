@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise POS - Login</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f3f4f6;
+            --text-color: #1f2937;
+            --error-color: #dc2626;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: var(--text-color);
+        }
+
+        .login-container {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: var(--primary-color);
+        }
+
+        .login-header p {
+            margin-top: 0.5rem;
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-login:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-login:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            background-color: #fee2e2;
+            color: var(--error-color);
+            padding: 0.8rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            text-align: center;
+            display: none;
+            border: 1px solid #fecaca;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-container">
+        <div class="login-header">
+            <h1>Enterprise POS</h1>
+            <p>Sign in to continue</p>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required placeholder="admin@example.com">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="••••••••">
+            </div>
+
+            <button type="submit" class="btn-login" id="loginBtn">Sign In</button>
+        </form>
+    </div>
+
+
+
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const errorDiv = document.getElementById('errorMessage');
+
+        loginForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Get values
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            // Reset UI
+            hideError();
+            setLoading(true);
+
+            try {
+                // Backend API call
+                const response = await fetch('http://localhost:5000/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        Email: email,
+                        Password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // ✅ SUCCESS: Save to Storage
+                    localStorage.setItem('pos_token', data.token);
+                    localStorage.setItem('pos_user', JSON.stringify(data.user));
+
+                    // ✅ REDIRECT: Based on Role
+
+                    if (data.user.role === 'Cashier') {
+                        window.location.href = 'bill.html';
+                    } else if (data.user.role === 'Admin' || data.user.role === 'Sales Manager' || data.user.role === 'Branch Manager') {
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        // Default Dashboard
+                        window.location.href = 'dashboard.html';
+                    }
+                } else {
+                    // ❌ FAILED: Show error from server
+                    showError(data.message || 'Invalid email or password.');
+                }
+
+            } catch (error) {
+                console.error('Connection Error:', error);
+                showError('Cannot connect to server. Check if Backend is running.');
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            errorDiv.style.display = 'none';
+        }
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                loginBtn.disabled = true;
+                loginBtn.textContent = 'Signing in...';
+            } else {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Sign In';
+            }
+        }
+
+        // Auto-Redirect if already logged in
+        window.onload = function () {
+            const token = localStorage.getItem('pos_token');
+            const userStr = localStorage.getItem('pos_user');
+
+            if (token && userStr) {
+                const user = JSON.parse(userStr);
+                if (user.role === 'Cashier') {
+                    window.location.href = 'bill.html';
+                } else {
+                    window.location.href = 'dashboard.html';
+                }
+            }
+        };
+    </script>
+</body>
+
+</html>

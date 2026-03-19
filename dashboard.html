@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise POS - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-100 font-sans">
+
+    <div class="flex h-screen overflow-hidden">
+        <div class="w-64 bg-indigo-900 text-white flex-shrink-0">
+            <div class="p-6 text-2xl font-bold border-b border-indigo-800">
+                POS System v3
+            </div>
+            <nav class="mt-6">
+                <a href="#" class="block py-3 px-6 bg-indigo-800 border-l-4 border-white"><i
+                        class="fas fa-home mr-3"></i> Dashboard</a>
+                <a href="bill.html" class="block py-3 px-6 hover:bg-indigo-800"><i
+                        class="fas fa-file-invoice-dollar mr-3"></i> Billing</a>
+                <a href="products.html" class="block py-3 px-6 hover:bg-indigo-800"><i class="fas fa-box mr-3"></i>
+                    Products</a>
+
+                <div id="adminMenu" class="hidden">
+                    <p class="px-6 mt-4 text-xs uppercase text-indigo-400 font-semibold">Administration</p>
+                    <a href="register.html" class="block py-3 px-6 hover:bg-indigo-800"><i
+                            class="fas fa-user-plus mr-3"></i> Register Member</a>
+                    <a href="reports.html" class="block py-3 px-6 hover:bg-indigo-800"><i
+                            class="fas fa-chart-line mr-3"></i> Sales Reports</a>
+                </div>
+            </nav>
+        </div>
+
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header class="bg-white shadow-sm py-4 px-8 flex justify-between items-center">
+                <h2 class="text-xl font-semibold text-gray-800">Control Panel</h2>
+                <div class="flex items-center gap-4">
+                    <div class="text-right">
+                        <p id="navUserName" class="text-sm font-bold text-gray-700"></p>
+                        <p id="navUserRole" class="text-xs text-indigo-600 font-medium capitalize"></p>
+                    </div>
+                    <button onclick="logout()"
+                        class="bg-red-50 text-red-600 p-2 rounded-full hover:bg-red-100 transition">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </header>
+
+            <main class="flex-1 overflow-x-hidden overflow-y-auto p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-b-4 border-blue-500">
+                        <p class="text-gray-500 text-sm">Today's Sales</p>
+                        <h3 class="text-2xl font-bold">LKR 45,250</h3>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-b-4 border-orange-500">
+                        <p class="text-gray-500 text-sm">Low Stock Items</p>
+                        <h3 id="lowStockCount" class="text-2xl font-bold">--</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="font-bold text-lg mb-4 text-gray-700">Quick Actions</h3>
+                    <div class="flex gap-4">
+                        <button onclick="location.href='bill.html'"
+                            class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition">Create
+                            New Bill</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Check Auth
+        window.onload = function () {
+            const token = localStorage.getItem('pos_token');
+            const userStr = localStorage.getItem('pos_user');
+
+            if (!token || !userStr) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = JSON.parse(userStr);
+            document.getElementById('navUserName').textContent = user.Name;
+            document.getElementById('navUserRole').textContent = user.role;
+
+            // Show Admin Menu if role is Admin
+            if (user.role === 'Admin' || user.role === 'Branch Manager') {
+                document.getElementById('adminMenu').classList.remove('hidden');
+            }
+
+            fetchStats();
+        };
+
+        async function fetchStats() {
+            const token = localStorage.getItem('pos_token');
+            try {
+                const response = await fetch('http://localhost:5000/api/dashboard/lowstock', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                document.getElementById('lowStockCount').textContent = data.length;
+            } catch (err) { console.log(err); }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+
+</html>
