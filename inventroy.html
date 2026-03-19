@@ -4,1171 +4,483 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Exchange | POS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-
+    <title>Thilak Super - Inventory System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --bg: #f3f4f6;
-            --card-bg: #ffffff;
-            --text-main: #1f2937;
-            --text-light: #6b7280;
-            --border: #e5e7eb;
-            --radius: 12px;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            color: var(--text-main);
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* --- Header --- */
-        .navbar {
-            background: var(--card-bg);
-            padding: 0 24px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border);
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        }
-
-        .brand {
-            font-weight: 700;
-            font-size: 1.25rem;
-            color: var(--primary-dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-back {
-            background: #f3f4f6;
-            color: var(--text-main);
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .btn-back:hover {
-            background: #e5e7eb;
-        }
-
-        /* --- Main Grid --- */
-        .container {
-            flex: 1;
-            padding: 20px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            overflow: hidden;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            border: 1px solid var(--border);
-        }
-
-        .card-header {
-            padding: 15px 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #fafafa;
-        }
-
-        .card-title {
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 700;
-        }
-
-        .badge-red {
-            background: #fee2e2;
-            color: var(--danger);
-        }
-
-        .badge-green {
-            background: #d1fae5;
-            color: var(--success);
-        }
-
-        /* --- Search Area --- */
-        .search-area {
-            padding: 15px;
-            background: #fff;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .input-wrapper {
-            position: relative;
-            display: flex;
-            gap: 10px;
-        }
-
-        .input-wrapper i {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-light);
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 10px 10px 10px 36px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 0.95rem;
-            outline: none;
-            transition: 0.2s;
-        }
-
-        .form-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-
-        .btn-action {
-            padding: 0 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            color: white;
-        }
-
-        .btn-find {
-            background: var(--primary);
-        }
-
-        .btn-add {
-            background: var(--success);
-        }
-
-        /* --- Tables --- */
-        .table-container {
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-
-        th {
-            background: #f9fafb;
-            color: var(--text-light);
-            font-weight: 600;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            padding: 12px 16px;
-            text-align: left;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        td {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border);
-            vertical-align: middle;
-        }
-
-        /* Highlight for Keyboard Navigation */
-        tr.kb-selected {
-            background-color: #e0e7ff;
-            border-left: 4px solid var(--primary);
-        }
-
-        tr.active-row {
-            background-color: #fff1f2;
-        }
-
-        /* Items selected for return */
-
-        .checkbox-wrapper input {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: var(--danger);
-        }
-
-        .qty-btn {
-            background: #f3f4f6;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 2px 8px;
-            cursor: pointer;
-        }
-
-        .qty-btn:hover {
-            background: #e5e7eb;
-        }
-
-        /* --- Bottom Bar --- */
-        .bottom-bar {
-            background: white;
-            border-top: 1px solid var(--border);
-            padding: 15px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
-        }
-
-        .summary-group {
-            display: flex;
-            gap: 40px;
-            align-items: center;
-        }
-
-        .sum-item label {
-            display: block;
-            font-size: 0.75rem;
-            color: var(--text-light);
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .sum-item span {
-            font-size: 1.4rem;
-            font-weight: 700;
-        }
-
-        .sum-item.negative span {
-            color: var(--danger);
-        }
-
-        .sum-item.positive span {
-            color: var(--success);
-        }
-
-        .btn-checkout {
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-        }
-
-        .btn-checkout:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        /* --- MODAL (POPUP) STYLES --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
+        .hide-scrollbar::-webkit-scrollbar {
             display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            backdrop-filter: blur(3px);
         }
 
-        .modal-content {
-            background: white;
-            width: 600px;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            animation: popIn 0.3s ease;
-        }
-
-        @keyframes popIn {
-            from {
-                transform: scale(0.9);
-                opacity: 0;
-            }
-
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-
-        .modal-header {
-            background: var(--primary);
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-header h2 {
-            margin: 0;
-            font-size: 1.5rem;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        .modal-body {
-            padding: 30px;
-            display: grid;
-            gap: 20px;
-        }
-
-        .pay-summary {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #f9fafb;
-            border-radius: 10px;
-            border: 1px solid #eee;
-        }
-
-        .pay-row {
-            text-align: center;
-        }
-
-        .pay-row label {
-            font-size: 0.8rem;
-            color: #666;
-            font-weight: bold;
-            display: block;
-        }
-
-        .pay-row span {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #333;
-        }
-
-        .payment-methods {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .p-method {
-            border: 2px solid #eee;
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: center;
-            transition: 0.2s;
-        }
-
-        .p-method:hover {
-            background: #f0f7ff;
-            border-color: var(--primary);
-        }
-
-        .p-method.active {
-            background: #e0e7ff;
-            border-color: var(--primary);
-            color: var(--primary-dark);
-            font-weight: bold;
-        }
-
-        .p-method i {
-            display: block;
-            font-size: 1.2rem;
-            margin-bottom: 5px;
-        }
-
-        .pay-input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .pay-input {
-            font-size: 2rem;
-            padding: 10px;
-            text-align: right;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .pay-input:focus {
-            border-color: var(--success);
-            outline: none;
-        }
-
-        .balance-display {
-            text-align: right;
-            margin-top: 10px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #666;
-        }
-
-        .modal-footer {
-            padding: 20px;
-            background: #f9fafb;
-            text-align: right;
-            border-top: 1px solid #eee;
-        }
-
-        .btn-print {
-            background: var(--success);
-            color: white;
-            padding: 15px 40px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        .btn-print:disabled {
-            background: #ccc;
-        }
-
-        /* Print Style */
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-
-            #print-area,
-            #print-area * {
-                visibility: visible;
-            }
-
-            #print-area {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 80mm;
-                padding: 5px;
-                color: black;
-                background: white;
-            }
-        }
-
-        #print-area {
-            display: none;
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
 </head>
 
-<body>
+<body class="bg-gray-50 text-gray-800 pb-12">
 
-    <nav class="navbar">
-        <div class="brand">
-            <div style="background:var(--primary); color:white; padding:6px; border-radius:8px;">
-                <i class="fas fa-sync-alt"></i>
-            </div>
-            Smart Exchange System
+    <div class="bg-green-500 text-white p-4 flex justify-between items-center shadow-md">
+        <div>
+            <h1 class="text-2xl font-bold tracking-wide">Thilak Super</h1>
+            <p class="text-xs font-semibold opacity-90">Inventory System</p>
         </div>
-        <button class="btn-back" onclick="location.reload()">
-            <i class="fas fa-redo"></i> Reset / New
-        </button>
-    </nav>
+        <button onclick="window.location.href='dashboard.html'"
+            class="bg-white/20 px-4 py-2 rounded-full border border-white/50 hover:bg-white/30 transition text-sm font-bold"><i
+                class="fas fa-arrow-left mr-2"></i>Menu</button>
+    </div>
 
-    <div class="container">
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title">
-                    <i class="fas fa-undo-alt" style="color:var(--danger)"></i> RETURN Items
+    <div class="max-w-6xl mx-auto mt-6 bg-white p-8 rounded-xl shadow-sm border border-gray-200">
+
+        <form id="masterForm">
+            <div class="mb-8">
+                <h2 class="text-sm font-bold text-gray-700 border-l-4 border-green-500 pl-2 mb-4 uppercase">1. Select
+                    Category</h2>
+                <div class="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
+                    <label class="cursor-pointer shrink-0"><input type="radio" name="category" value="1"
+                            class="peer hidden" checked>
+                        <div
+                            class="w-24 h-24 border-2 border-gray-200 rounded-xl flex flex-col items-center justify-center peer-checked:border-green-500 peer-checked:bg-green-50 peer-checked:text-green-700 hover:bg-gray-50 transition">
+                            <i class="fas fa-baby text-2xl mb-2 text-yellow-500"></i><span
+                                class="text-xs font-semibold">Baby Items</span>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer shrink-0"><input type="radio" name="category" value="2"
+                            class="peer hidden">
+                        <div
+                            class="w-24 h-24 border-2 border-gray-200 rounded-xl flex flex-col items-center justify-center peer-checked:border-green-500 peer-checked:bg-green-50 hover:bg-gray-50 transition">
+                            <i class="fas fa-shopping-basket text-2xl mb-2 text-red-400"></i><span
+                                class="text-xs font-semibold">Grocery</span>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer shrink-0"><input type="radio" name="category" value="3"
+                            class="peer hidden">
+                        <div
+                            class="w-24 h-24 border-2 border-gray-200 rounded-xl flex flex-col items-center justify-center peer-checked:border-green-500 peer-checked:bg-green-50 hover:bg-gray-50 transition">
+                            <i class="fas fa-wine-glass-alt text-2xl mb-2 text-purple-500"></i><span
+                                class="text-xs font-semibold">Beverage</span>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer shrink-0"><input type="radio" name="category" value="4"
+                            class="peer hidden">
+                        <div
+                            class="w-24 h-24 border-2 border-gray-200 rounded-xl flex flex-col items-center justify-center peer-checked:border-green-500 peer-checked:bg-green-50 hover:bg-gray-50 transition">
+                            <i class="fas fa-cookie-bite text-2xl mb-2 text-amber-700"></i><span
+                                class="text-xs font-semibold">Snacks</span>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer shrink-0"><input type="radio" name="category" value="5"
+                            class="peer hidden">
+                        <div
+                            class="w-24 h-24 border-2 border-gray-200 rounded-xl flex flex-col items-center justify-center peer-checked:border-green-500 peer-checked:bg-green-50 hover:bg-gray-50 transition">
+                            <i class="fas fa-broom text-2xl mb-2 text-gray-500"></i><span
+                                class="text-xs font-semibold">Household</span>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer shrink-0"><input type="radio" name="category" value="6"
+                            class="peer hidden">
+                        <div
+                            class="w-24 h-24 border-2 border-gray-200 rounded-xl flex flex-col items-center justify-center peer-checked:border-green-500 peer-checked:bg-green-50 hover:bg-gray-50 transition">
+                            <i class="fas fa-pump-soap text-2xl mb-2 text-pink-500"></i><span
+                                class="text-xs font-semibold">Cosmetics</span>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer shrink-0"><input type="radio" name="category" value="7"
+                            class="peer hidden">
+                        <div
+                            class="w-24 h-24 border-2 border-gray-200 rounded-xl flex flex-col items-center justify-center peer-checked:border-green-500 peer-checked:bg-green-50 hover:bg-gray-50 transition">
+                            <i class="fas fa-pills text-2xl mb-2 text-blue-500"></i><span
+                                class="text-xs font-semibold">Medicine</span>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer shrink-0"><input type="radio" name="category" value="8"
+                            class="peer hidden">
+                        <div
+                            class="w-24 h-24 border-2 border-gray-200 rounded-xl flex flex-col items-center justify-center peer-checked:border-green-500 peer-checked:bg-green-50 hover:bg-gray-50 transition">
+                            <i class="fas fa-box-open text-2xl mb-2 text-orange-400"></i><span
+                                class="text-xs font-semibold">Other</span>
+                        </div>
+                    </label>
                 </div>
-                <div class="badge badge-red" id="lbl-return-total">Credit: 0.00</div>
             </div>
-            <div class="search-area">
-                <div class="input-wrapper">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="invInput" class="form-input"
-                        placeholder="Enter Invoice No (e.g. INV-XXXX)..." onkeydown="handleInvInput(event)">
-                    <button class="btn-action btn-find" onclick="findInvoice()">Find</button>
+
+            <div class="mb-8">
+                <h2 class="text-sm font-bold text-gray-700 border-l-4 border-green-500 pl-2 mb-4 uppercase">2. Product
+                    Details</h2>
+                <div class="grid grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Barcode ID *</label>
+                        <input type="text" id="barcode"
+                            class="w-full p-2.5 border border-gray-300 rounded focus:ring-1 focus:ring-green-500 outline-none"
+                            placeholder="Scan or Type..." required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Product Name *</label>
+                        <input type="text" id="prodName"
+                            class="w-full p-2.5 border border-gray-300 rounded focus:ring-1 focus:ring-green-500 outline-none"
+                            placeholder="Ex: Prima Flour" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Brand Name</label>
+                        <input type="text" id="brandName"
+                            class="w-full p-2.5 border border-gray-300 rounded focus:ring-1 focus:ring-green-500 outline-none"
+                            placeholder="Ex: Prima, Keells">
+                    </div>
                 </div>
-                <small style="color:#666; margin-top:5px; display:block;">* Use Arrow Keys (↓ ↑) to select items, Space
-                    to check.</small>
             </div>
-            <div class="table-container">
-                <table id="returnTable">
-                    <thead>
+
+            <div class="mb-8">
+                <h2 class="text-sm font-bold text-gray-700 border-l-4 border-green-500 pl-2 mb-4 uppercase">3. Unit &
+                    Stock</h2>
+                <div class="grid grid-cols-4 gap-6">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Unit Type</label>
+                        <input type="text" id="unitType"
+                            class="w-full p-2.5 border border-gray-300 rounded outline-none"
+                            placeholder="Packet, Kg, etc.">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Size / Weight</label>
+                        <input type="text" id="sizeWeight"
+                            class="w-full p-2.5 border border-gray-300 rounded outline-none"
+                            placeholder="500g, 1L, etc.">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Stock Quantity *</label>
+                        <input type="number" id="qty" class="w-full p-2.5 border border-gray-300 rounded outline-none"
+                            value="0" min="1" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Expire Date</label>
+                        <input type="date" id="expireDate"
+                            class="w-full p-2.5 border border-gray-300 rounded outline-none text-gray-600">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h2 class="text-sm font-bold text-gray-700 border-l-4 border-green-500 pl-2 mb-4 uppercase">4. Pricing &
+                    Cost</h2>
+                <div class="grid grid-cols-3 gap-6 mb-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Buying Price (Per Unit) *</label>
+                        <input type="number" id="buyPrice" step="0.01"
+                            class="w-full p-2.5 border border-gray-300 rounded outline-none" value="0.00" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Retail Price (Selling) *</label>
+                        <input type="number" id="retailPrice" step="0.01"
+                            class="w-full p-2.5 border border-gray-300 rounded outline-none" value="0.00" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Whole Sale (Selling)</label>
+                        <input type="number" id="wholePrice" step="0.01"
+                            class="w-full p-2.5 border border-gray-300 rounded outline-none" value="0.00">
+                    </div>
+                </div>
+                <div
+                    class="bg-green-50 border border-green-200 p-4 rounded flex justify-between items-center text-sm font-bold">
+                    <span class="text-green-800 tracking-wide">Net Profit Per Unit:</span>
+                    <span class="text-green-600 text-lg" id="netProfitDisplay">Rs. 0.00</span>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h2 class="text-sm font-bold text-gray-700 border-l-4 border-green-500 pl-2 mb-4 uppercase">5. Payment &
+                    Accounts</h2>
+                <div class="border border-yellow-300 rounded-lg p-5 bg-yellow-50/50">
+                    <div class="grid grid-cols-2 gap-6 mb-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">Total Bill (Cost x Qty)</label>
+                            <input type="number" id="totalBill"
+                                class="w-full p-2.5 border border-gray-300 rounded bg-gray-100 font-bold outline-none text-gray-600"
+                                value="0.00" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-green-700 mb-1">Amount Paid</label>
+                            <input type="number" id="amountPaid" step="0.01"
+                                class="w-full p-2.5 border border-green-400 rounded focus:ring-2 focus:ring-green-500 outline-none text-green-800 font-bold"
+                                value="0.00">
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center text-sm font-bold pt-3 border-t border-yellow-300">
+                        <span class="text-gray-700">Remaining Due:</span>
+                        <span class="text-red-600 text-lg" id="dueDisplay">Rs. 0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h2 class="text-sm font-bold text-gray-700 border-l-4 border-green-500 pl-2 mb-4 uppercase">6. Supplier
+                    Info</h2>
+                <div class="border border-gray-200 rounded-lg p-5 bg-gray-50/80">
+                    <div class="mb-5">
+                        <label class="block text-xs font-bold text-blue-800 mb-2"><i class="fas fa-search mr-1"></i>
+                            Select Supplier</label>
+                        <select id="supplierSelect"
+                            class="w-full p-2.5 border border-gray-300 rounded outline-none font-semibold text-gray-700 bg-white shadow-sm">
+                            <option value="NEW">-- Create New Supplier --</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-5 pt-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Supplier ID (Auto)</label>
+                            <input type="text" id="supIdDisplay"
+                                class="w-full p-2.5 border border-gray-200 rounded bg-gray-200 outline-none text-gray-500"
+                                placeholder="Auto Generated" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Supplier Name *</label>
+                            <input type="text" id="supName"
+                                class="w-full p-2.5 border border-gray-300 rounded outline-none" placeholder="Name"
+                                required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Phone Number</label>
+                            <input type="text" id="supPhone"
+                                class="w-full p-2.5 border border-gray-300 rounded outline-none"
+                                placeholder="07xxxxxxxx">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Notes / Remarks</label>
+                            <input type="text" id="supNotes"
+                                class="w-full p-2.5 border border-gray-300 rounded outline-none"
+                                placeholder="Any details...">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Lifetime Total
+                                Purchase</label>
+                            <input type="text" id="supLifetime"
+                                class="w-full p-2.5 border border-gray-200 rounded bg-gray-200 outline-none font-bold text-gray-600"
+                                value="0.00" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="alertMsg" class="hidden mb-6 p-4 rounded text-center font-bold text-lg shadow-sm"></div>
+
+            <button type="submit"
+                class="w-full bg-[#2c3e50] hover:bg-[#1a252f] text-white p-4 rounded-lg font-bold tracking-widest transition shadow-lg text-lg">
+                SAVE STOCK
+            </button>
+            <button type="button" onclick="document.getElementById('masterForm').reset(); calculateValues();"
+                class="w-full mt-3 p-2 text-sm text-gray-500 hover:text-gray-800 transition font-semibold">Clear Form /
+                Cancel</button>
+        </form>
+
+        <div class="mt-12 pt-8 border-t border-gray-300">
+            <h2 class="text-sm font-bold text-gray-700 border-l-4 border-green-500 pl-2 mb-4 uppercase"><i
+                    class="fas fa-boxes mr-2 text-green-600"></i> Inventory List</h2>
+            <div class="mb-4">
+                <input type="text"
+                    class="w-full p-2.5 border border-gray-300 rounded outline-none text-sm placeholder-gray-400"
+                    placeholder="Search by Name, Barcode, Brand or Category...">
+            </div>
+            <div class="overflow-x-auto rounded-lg border border-gray-200">
+                <table class="w-full text-left text-sm text-gray-600">
+                    <thead class="bg-gray-100 text-gray-700 font-bold border-b border-gray-200">
                         <tr>
-                            <th width="40">Use</th>
-                            <th>Item</th>
-                            <th>Sold Price</th>
-                            <th>Qty</th>
-                            <th align="right">Return Value</th>
+                            <th class="p-3">Barcode</th>
+                            <th class="p-3">Product</th>
+                            <th class="p-3">Cost</th>
+                            <th class="p-3">Price</th>
+                            <th class="p-3 text-center">Stock</th>
+                            <th class="p-3 text-center">Batch No</th>
                         </tr>
                     </thead>
-                    <tbody id="returnTbody">
-                        <tr>
-                            <td colspan="5" style="text-align:center; color:#999; padding:20px;">Load an invoice to
-                                start</td>
-                        </tr>
+                    <tbody id="inventoryTableBody" class="divide-y divide-gray-100 bg-white">
                     </tbody>
                 </table>
             </div>
         </div>
-
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title">
-                    <i class="fas fa-shopping-cart" style="color:var(--success)"></i> NEW Items
-                </div>
-                <div class="badge badge-green" id="lbl-sale-total">Total: 0.00</div>
-            </div>
-            <div class="search-area">
-                <div class="input-wrapper">
-                    <i class="fas fa-barcode"></i>
-                    <input type="text" id="prodInput" class="form-input" placeholder="Scan Barcode..." autofocus
-                        onkeydown="if(event.key==='Enter') addNewItem()">
-                    <button class="btn-action btn-add" onclick="addNewItem()">Add</button>
-                </div>
-            </div>
-            <div class="table-container">
-                <table id="saleTable">
-                    <thead>
-                        <tr>
-                            <th>Item Name</th>
-                            <th>Price</th>
-                            <th class="text-center">Qty</th>
-                            <th align="right">Total</th>
-                            <th width="30"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="saleTbody">
-                        <tr>
-                            <td colspan="5" style="text-align:center; color:#999; padding:20px;">Scan items to add</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>
 
-    <div class="bottom-bar">
-        <div class="summary-group">
-            <div class="sum-item negative">
-                <label>Return Credit</label>
-                <span id="ft-credit">-0.00</span>
-            </div>
-            <div class="sum-item positive">
-                <label>New Item Total</label>
-                <span id="ft-new">+0.00</span>
-            </div>
-            <div class="sum-item" style="border-left:2px solid #ddd; padding-left:20px;">
-                <label id="status-label">NET BALANCE</label>
-                <span id="ft-balance" style="color:var(--primary-dark)">0.00</span>
-            </div>
-        </div>
-        <button class="btn-checkout" id="btn-process" onclick="openPaymentModal()" disabled>
-            <i class="fas fa-money-bill-wave"></i> Process Payment
-        </button>
-    </div>
-
-    <div class="modal-overlay" id="paymentModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2><i class="fas fa-cash-register"></i> Complete Exchange</h2>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-
-                <div class="pay-summary">
-                    <div class="pay-row">
-                        <label>New Total</label>
-                        <span id="mod-new" style="color:var(--success)">0.00</span>
-                    </div>
-                    <div class="pay-row">
-                        <label>Return Credit</label>
-                        <span id="mod-ret" style="color:var(--danger)">0.00</span>
-                    </div>
-                    <div class="pay-row">
-                        <label>PAYABLE</label>
-                        <span id="mod-pay" style="color:var(--primary); text-decoration: underline;">0.00</span>
-                    </div>
-                </div>
-
-                <div id="payment-options">
-                    <label style="font-weight:bold; margin-bottom:5px; display:block;">Select Payment Method:</label>
-                    <div class="payment-methods">
-                        <div class="p-method active" onclick="setPayMethod('CASH', this)"><i class="fas fa-coins"></i>
-                            Cash</div>
-                        <div class="p-method" onclick="setPayMethod('CARD', this)"><i class="fas fa-credit-card"></i>
-                            Card</div>
-                        <div class="p-method" onclick="setPayMethod('BANK', this)"><i class="fas fa-university"></i>
-                            Bank</div>
-                        <div class="p-method" onclick="setPayMethod('LOAN', this)"><i class="fas fa-user-clock"></i>
-                            Loan</div>
-                    </div>
-
-                    <div class="pay-input-group">
-                        <label>Amount Received / Paid</label>
-                        <input type="number" id="payInputAmount" class="pay-input" placeholder="0.00"
-                            oninput="calcModalBalance()">
-                    </div>
-
-                    <div class="balance-display">
-                        Balance: <span id="mod-balance">0.00</span>
-                    </div>
-                </div>
-
-                <div id="refund-message"
-                    style="display:none; text-align:center; padding:20px; background:#fff1f2; color:var(--danger); border-radius:8px; font-weight:bold;">
-                    <i class="fas fa-exclamation-circle"></i> REFUND DUE to Customer. Please return cash.
-                </div>
-
-            </div>
-            <div class="modal-footer">
-                <button class="btn-print" id="btn-final-print" onclick="finalizeTransaction()">
-                    <i class="fas fa-print"></i> SAVE & PRINT
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="print-area"></div>
-
+    <!-- ONLY CHANGED PARTS SHOWN (FULL FILE SAME, JUST SCRIPT UPDATED) -->
     <script>
-        // --- 1. DATA & VARIABLES ---
-        const DB_PRODUCTS = 'pos_products';
-        const DB_SALES = 'pos_sales';
-        const DB_SHOP = 'pos_shop_data';
+        const token = localStorage.getItem('pos_token');
+        if (!token) window.location.href = 'login.html';
 
-        let productsDB = JSON.parse(localStorage.getItem(DB_PRODUCTS)) || [];
-        let salesDB = JSON.parse(localStorage.getItem(DB_SALES)) || [];
-        // Default Shop Data if not set
-        let shopData = JSON.parse(localStorage.getItem(DB_SHOP)) || {
-            name: "MY POS SHOP",
-            address: "123, Main Street, Colombo",
-            phone: "077-1234567"
-        };
+        let suppliersData = [];
 
-        // State
-        let currentInvoiceItems = [];
-        let returnCart = [];
-        let newCart = [];
-        let refInvoiceID = "";
+        // ================= LOAD DATA =================
+        async function loadInitialData() {
+            try {
+                const supRes = await fetch('http://localhost:5000/api/suppliers', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
 
-        // Keyboard Nav State
-        let selectedRowIndex = -1;
-        let selectedPayMethod = 'CASH';
-        let netPayableAmount = 0;
+                suppliersData = await supRes.json();
 
-        // --- 2. KEYBOARD & INPUT HANDLING ---
+                const select = document.getElementById('supplierSelect');
+                select.innerHTML = '<option value="NEW">-- Create New Supplier --</option>';
 
-        // Handle Enter key in Invoice Search
-        function handleInvInput(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                findInvoice();
+                suppliersData.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.Supplier_ID;
+                    opt.textContent = `${s.Name} (${s.Phone_Number || 'No Phone'})`;
+                    select.appendChild(opt);
+                });
+
+                loadInventoryList();
+            } catch (err) {
+                console.error(err);
             }
         }
 
-        // Handle Arrow Keys for Return Table
-        document.addEventListener('keydown', (e) => {
-            const returnTable = document.getElementById('returnTable');
-            const rows = returnTable.querySelectorAll('tbody tr');
+        // ================= LOAD INVENTORY =================
+        async function loadInventoryList() {
+            const res = await fetch('http://localhost:5000/api/recent-inventory', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
 
-            // Only navigate if table has data and Invoice Input is NOT focused
-            if (rows.length > 0 && document.activeElement !== document.getElementById('invInput') && !document.getElementById('paymentModal').style.display.includes('flex')) {
+            const data = await res.json();
+            const tbody = document.getElementById('inventoryTableBody');
+            tbody.innerHTML = '';
 
-                if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    if (selectedRowIndex < rows.length - 1) {
-                        selectedRowIndex++;
-                        highlightRow(rows);
-                    }
-                } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    if (selectedRowIndex > 0) {
-                        selectedRowIndex--;
-                        highlightRow(rows);
-                    }
-                } else if (e.key === ' ' || e.key === 'Spacebar') { // Space to toggle
-                    e.preventDefault();
-                    if (selectedRowIndex >= 0 && selectedRowIndex < rows.length) {
-                        const checkbox = rows[selectedRowIndex].querySelector('input[type="checkbox"]');
-                        if (checkbox) {
-                            checkbox.click();
-                        }
-                    }
+            data.forEach(item => {
+                tbody.innerHTML += `
+        <tr>
+            <td class="p-3">${item.Barcode}</td>
+            <td class="p-3">${item.Product}</td>
+            <td class="p-3">Rs.${item.Cost}</td>
+            <td class="p-3">Rs.${item.Price}</td>
+            <td class="p-3 text-center ${item.Stock < 5 ? 'text-red-500' : 'text-green-600'}">${item.Stock}</td>
+            <td class="p-3 text-center">${item.Batch_Number || '-'}</td>
+        </tr>`;
+            });
+        }
+
+        // ================= CALCULATIONS =================
+        function calculateValues() {
+            const buy = parseFloat(buyPrice.value || 0);
+            const sell = parseFloat(retailPrice.value || 0);
+            const quantity = parseInt(qty.value || 0);
+
+            document.getElementById('netProfitDisplay').innerText =
+                `Rs. ${(sell - buy).toFixed(2)}`;
+
+            const total = buy * quantity;
+            totalBill.value = total.toFixed(2);
+
+            const due = total - parseFloat(amountPaid.value || 0);
+            document.getElementById('dueDisplay').innerText =
+                `Rs. ${due.toFixed(2)}`;
+        }
+
+        // events
+        [buyPrice, retailPrice, qty, amountPaid].forEach(el => {
+            el.addEventListener('input', calculateValues);
+        });
+
+        // ================= AUTO PRODUCT LOAD =================
+        document.getElementById('barcode').addEventListener('blur', async (e) => {
+            const barcode = e.target.value.trim();
+            if (!barcode) return;
+
+            try {
+                const res = await fetch(`http://localhost:5000/api/products/barcode/${barcode}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    const p = await res.json();
+
+                    prodName.value = p.Name;
+                    brandName.value = p.Brand || '';
+                    unitType.value = p.Unit || '';
+                    sizeWeight.value = p.Description || '';
+
+                    if (p.Cost_Price) buyPrice.value = p.Cost_Price;
+                    if (p.Sell_Price) retailPrice.value = p.Sell_Price;
+
+                    calculateValues();
                 }
+            } catch { }
+        });
+
+        // ================= BATCH =================
+        function generateBatch(barcode, date) {
+            const d = new Date();
+            const part = date ? date.replace(/-/g, '') :
+                `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}`;
+
+            return `B-${barcode}-${part}`;
+        }
+
+        // ================= SUBMIT =================
+        document.getElementById('masterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const barcodeVal = barcode.value;
+
+            const payload = {
+                Category_ID: parseInt(document.querySelector('input[name="category"]:checked').value),
+                Barcode: barcodeVal,
+                Product_Name: prodName.value,
+                Brand_Name: brandName.value,
+                Unit_Type: unitType.value,
+                Size_Weight: sizeWeight.value,
+                Stock_Quantity: parseInt(qty.value),
+                Expire_Date: expireDate.value || null,
+                Batch_Number: generateBatch(barcodeVal, expireDate.value),
+
+                Buying_Price: parseFloat(buyPrice.value),
+                Retail_Price: parseFloat(retailPrice.value),
+                Wholesale_Price: parseFloat(wholePrice.value || 0),
+
+                Total_Bill: parseFloat(totalBill.value),
+                Amount_Paid: parseFloat(amountPaid.value),
+                Remaining_Due: totalBill.value - amountPaid.value,
+
+                Is_New_Supplier: supplierSelect.value === 'NEW',
+                Supplier_ID: supplierSelect.value === 'NEW' ? null : supplierSelect.value,
+                Supplier_Name: supName.value,
+                Supplier_Phone: supPhone.value,
+                Supplier_Notes: supNotes.value
+            };
+
+            const alertDiv = document.getElementById('alertMsg');
+
+            try {
+                const res = await fetch('http://localhost:5000/api/master-receive', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                alertDiv.classList.remove('hidden');
+
+                if (res.ok) {
+                    alertDiv.className = "mb-6 p-4 bg-green-100 text-green-700 font-bold text-center";
+                    alertDiv.innerText = `✅ ${data.message}`;
+
+                    masterForm.reset();
+                    calculateValues();
+                    loadInitialData();
+                } else {
+                    alertDiv.className = "mb-6 p-4 bg-red-100 text-red-700 font-bold text-center";
+                    alertDiv.innerText = data.message;
+                }
+
+            } catch {
+                alertDiv.className = "mb-6 p-4 bg-red-100 text-red-700 font-bold text-center";
+                alertDiv.innerText = "Server Error";
             }
         });
 
-        function highlightRow(rows) {
-            rows.forEach(r => r.classList.remove('kb-selected'));
-            if (selectedRowIndex >= 0 && rows[selectedRowIndex]) {
-                rows[selectedRowIndex].classList.add('kb-selected');
-                rows[selectedRowIndex].scrollIntoView({ block: 'nearest' });
-            }
-        }
-
-        // --- 3. RETURN LOGIC ---
-        function findInvoice() {
-            const id = document.getElementById('invInput').value.trim();
-            const invoice = salesDB.find(s => s.id.toLowerCase() === id.toLowerCase());
-
-            if (!invoice) {
-                alert("Invoice not found!");
-                return;
-            }
-
-            refInvoiceID = invoice.id;
-            currentInvoiceItems = JSON.parse(JSON.stringify(invoice.items));
-            returnCart = [];
-            selectedRowIndex = -1; // Reset nav
-
-            // Auto focus on table area implicitly by blurring input or moving focus
-            document.getElementById('invInput').blur();
-
-            renderReturnTable();
-            // Highlight first row implicitly for navigation readiness
-            selectedRowIndex = 0;
-            highlightRow(document.querySelectorAll('#returnTbody tr'));
-        }
-
-        function renderReturnTable() {
-            const tbody = document.getElementById('returnTbody');
-            tbody.innerHTML = "";
-
-            currentInvoiceItems.forEach((item, index) => {
-                const inReturn = returnCart.find(r => r.index === index);
-                const isChecked = inReturn ? 'checked' : '';
-                const rowClass = inReturn ? 'active-row' : '';
-                const lineTotal = inReturn ? (inReturn.qty * item.price).toFixed(2) : '0.00';
-
-                tbody.innerHTML += `
-                    <tr class="${rowClass}" onclick="clickSelectRow(${index})">
-                        <td>
-                            <div class="checkbox-wrapper">
-                                <input type="checkbox" ${isChecked} onchange="toggleReturnItem(${index}, this.checked)">
-                            </div>
-                        </td>
-                        <td>
-                            <strong>${item.name}</strong><br>
-                            <small class="text-muted">Sold @ ${item.price}</small>
-                        </td>
-                        <td>${item.price}</td>
-                        <td>
-                            ${inReturn ? `
-                                <button class="qty-btn" onclick="adjustReturnQty(${index}, -1); event.stopPropagation();">-</button>
-                                <span style="margin:0 5px; font-weight:bold;">${inReturn.qty}</span>
-                                <button class="qty-btn" onclick="adjustReturnQty(${index}, 1); event.stopPropagation();">+</button>
-                            ` : item.qty}
-                        </td>
-                        <td align="right" style="color:var(--danger); font-weight:bold;">${lineTotal}</td>
-                    </tr>
-                `;
-            });
-            calculateTotals();
-        }
-
-        function clickSelectRow(index) {
-            selectedRowIndex = index;
-            highlightRow(document.querySelectorAll('#returnTbody tr'));
-        }
-
-        function toggleReturnItem(index, isChecked) {
-            if (isChecked) {
-                const originalItem = currentInvoiceItems[index];
-                returnCart.push({
-                    index: index,
-                    barcode: originalItem.barcode || originalItem.code,
-                    name: originalItem.name,
-                    price: parseFloat(originalItem.price),
-                    qty: originalItem.qty,
-                    maxQty: originalItem.qty
-                });
-            } else {
-                returnCart = returnCart.filter(item => item.index !== index);
-            }
-            renderReturnTable();
-            document.getElementById('prodInput').focus(); // Jump to New Item scan
-        }
-
-        function adjustReturnQty(index, delta) {
-            const cartItem = returnCart.find(r => r.index === index);
-            if (!cartItem) return;
-
-            let newQty = cartItem.qty + delta;
-            if (newQty > cartItem.maxQty) newQty = cartItem.maxQty;
-            if (newQty < 1) newQty = 1;
-
-            cartItem.qty = newQty;
-            renderReturnTable();
-        }
-
-        // --- 4. NEW ITEM LOGIC ---
-        function addNewItem() {
-            const code = document.getElementById('prodInput').value.trim();
-            // Handle Code or Barcode match
-            const product = productsDB.find(p => (p.barcode && p.barcode === code) || p.code === code);
-
-            if (!product) {
-                alert("Product not found!");
-                document.getElementById('prodInput').select();
-                return;
-            }
-
-            const existing = newCart.find(i => i.barcode === (product.barcode || product.code));
-            if (existing) {
-                existing.qty++;
-            } else {
-                newCart.push({
-                    barcode: product.barcode || product.code,
-                    name: product.pName || product.name,
-                    price: parseFloat(product.sellPrice || product.price),
-                    qty: 1
-                });
-            }
-
-            document.getElementById('prodInput').value = "";
-            document.getElementById('prodInput').focus();
-            renderNewTable();
-        }
-
-        function renderNewTable() {
-            const tbody = document.getElementById('saleTbody');
-            tbody.innerHTML = "";
-
-            if (newCart.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999; padding:20px;">Scan items to add</td></tr>`;
-            }
-
-            newCart.forEach((item, index) => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${item.name}</td>
-                        <td>${item.price.toFixed(2)}</td>
-                        <td class="text-center">
-                            <button class="qty-btn" onclick="adjustNewQty(${index}, -1)">-</button>
-                            <span style="margin:0 5px; font-weight:bold;">${item.qty}</span>
-                            <button class="qty-btn" onclick="adjustNewQty(${index}, 1)">+</button>
-                        </td>
-                        <td align="right" style="color:var(--success); font-weight:bold;">
-                            ${(item.price * item.qty).toFixed(2)}
-                        </td>
-                        <td><i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="removeNewItem(${index})"></i></td>
-                    </tr>
-                `;
-            });
-            calculateTotals();
-        }
-
-        function adjustNewQty(index, delta) {
-            if (newCart[index].qty + delta < 1) return;
-            newCart[index].qty += delta;
-            renderNewTable();
-        }
-
-        function removeNewItem(index) {
-            newCart.splice(index, 1);
-            renderNewTable();
-        }
-
-        // --- 5. CALCULATIONS ---
-        function calculateTotals() {
-            let returnTotal = returnCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            let newTotal = newCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            let balance = newTotal - returnTotal;
-            netPayableAmount = balance;
-
-            // UI Updates
-            document.getElementById('lbl-return-total').innerText = "Credit: " + returnTotal.toFixed(2);
-            document.getElementById('lbl-sale-total').innerText = "Total: " + newTotal.toFixed(2);
-            document.getElementById('ft-credit').innerText = "-" + returnTotal.toFixed(2);
-            document.getElementById('ft-new').innerText = "+" + newTotal.toFixed(2);
-
-            const balDisplay = document.getElementById('ft-balance');
-            balDisplay.innerText = balance.toFixed(2);
-
-            if (balance < 0) {
-                balDisplay.style.color = "var(--danger)";
-                document.getElementById('status-label').innerText = "REFUND DUE";
-            } else {
-                balDisplay.style.color = "var(--primary-dark)";
-                document.getElementById('status-label').innerText = "NET PAYABLE";
-            }
-
-            // Enable Process Button if there is any activity
-            const hasActivity = (returnCart.length > 0 || newCart.length > 0);
-            document.getElementById('btn-process').disabled = !hasActivity;
-        }
-
-        // --- 6. MODAL & PAYMENT ---
-        function openPaymentModal() {
-            const overlay = document.getElementById('paymentModal');
-            overlay.style.display = 'flex';
-
-            let returnTotal = returnCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            let newTotal = newCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-
-            document.getElementById('mod-new').innerText = newTotal.toFixed(2);
-            document.getElementById('mod-ret').innerText = "- " + returnTotal.toFixed(2);
-            document.getElementById('mod-pay').innerText = netPayableAmount.toFixed(2);
-
-            const input = document.getElementById('payInputAmount');
-            const options = document.getElementById('payment-options');
-            const refundMsg = document.getElementById('refund-message');
-            const btnPrint = document.getElementById('btn-final-print');
-
-            input.value = "";
-            document.getElementById('mod-balance').innerText = "0.00";
-
-            if (netPayableAmount > 0) {
-                // Customer Pays
-                options.style.display = 'block';
-                refundMsg.style.display = 'none';
-                input.focus();
-                btnPrint.disabled = true; // Wait for input
-            } else {
-                // Refund or Zero
-                options.style.display = 'none';
-                if (netPayableAmount < 0) {
-                    refundMsg.style.display = 'block';
-                    refundMsg.innerHTML = `<i class="fas fa-exclamation-circle"></i> REFUND DUE: Rs. ${Math.abs(netPayableAmount).toFixed(2)}`;
-                } else {
-                    refundMsg.style.display = 'block';
-                    refundMsg.innerHTML = `<i class="fas fa-check-circle"></i> EVEN EXCHANGE. No Payment Required.`;
-                    refundMsg.style.color = "green";
-                    refundMsg.style.background = "#d1fae5";
-                }
-                btnPrint.disabled = false;
-            }
-        }
-
-        function closeModal() {
-            document.getElementById('paymentModal').style.display = 'none';
-        }
-
-        function setPayMethod(method, el) {
-            selectedPayMethod = method;
-            document.querySelectorAll('.p-method').forEach(div => div.classList.remove('active'));
-            el.classList.add('active');
-        }
-
-        function calcModalBalance() {
-            if (netPayableAmount <= 0) return;
-
-            const given = parseFloat(document.getElementById('payInputAmount').value) || 0;
-            const balance = given - netPayableAmount;
-
-            const balEl = document.getElementById('mod-balance');
-            balEl.innerText = balance.toFixed(2);
-
-            // Allow print even if partial payment (for credit) OR if fully paid
-            if (selectedPayMethod === 'LOAN') {
-                document.getElementById('btn-final-print').disabled = false;
-            } else {
-                // For Cash/Card, must pay full amount
-                if (given >= netPayableAmount) {
-                    balEl.style.color = "green";
-                    document.getElementById('btn-final-print').disabled = false;
-                } else {
-                    balEl.style.color = "red";
-                    document.getElementById('btn-final-print').disabled = true;
-                }
-            }
-        }
-
-        // --- 7. FINALIZE & PRINT ---
-        function finalizeTransaction() {
-            // A. Update Stock
-            // Return Items -> Increase Stock
-            returnCart.forEach(rItem => {
-                const p = productsDB.find(x => x.barcode === rItem.barcode);
-                if (p) {
-                    const currentStock = parseFloat(p.stock !== undefined ? p.stock : p.qty);
-                    p.stock = currentStock + rItem.qty;
-                }
-            });
-
-            // New Items -> Decrease Stock
-            newCart.forEach(nItem => {
-                const p = productsDB.find(x => x.barcode === nItem.barcode);
-                if (p) {
-                    const currentStock = parseFloat(p.stock !== undefined ? p.stock : p.qty);
-                    p.stock = currentStock - nItem.qty;
-                }
-            });
-
-            localStorage.setItem(DB_PRODUCTS, JSON.stringify(productsDB));
-
-            // B. Save Transaction
-            const exchangeID = "EXC-" + Date.now().toString().slice(-6);
-            const cashGiven = parseFloat(document.getElementById('payInputAmount').value) || 0;
-
-            const newSale = {
-                id: exchangeID,
-                date: new Date().toISOString(),
-                items: newCart,
-                returnedItems: returnCart,
-                total: netPayableAmount,
-                payMethod: (netPayableAmount > 0) ? selectedPayMethod : 'REFUND',
-                cashGiven: cashGiven,
-                refInvoice: refInvoiceID,
-                type: "EXCHANGE"
-            };
-
-            salesDB.push(newSale);
-            localStorage.setItem(DB_SALES, JSON.stringify(salesDB));
-
-            // C. Print
-            printReceipt(newSale);
-            closeModal();
-        }
-
-        function printReceipt(saleData) {
-            const dateStr = new Date().toLocaleString();
-
-            // Build Item Rows
-            let returnRows = "";
-            if (saleData.returnedItems.length > 0) {
-                returnRows += `<tr><td colspan="4" style="border-bottom:1px dashed #000; padding-top:5px; font-weight:bold;">RETURNED ITEMS</td></tr>`;
-                saleData.returnedItems.forEach(i => {
-                    returnRows += `
-                        <tr>
-                            <td>${i.name}</td>
-                            <td>${i.qty}</td>
-                            <td>${i.price}</td>
-                            <td align="right">-${(i.qty * i.price).toFixed(2)}</td>
-                        </tr>
-                    `;
-                });
-            }
-
-            let newRows = "";
-            if (saleData.items.length > 0) {
-                newRows += `<tr><td colspan="4" style="border-bottom:1px dashed #000; padding-top:5px; font-weight:bold;">NEW ITEMS</td></tr>`;
-                saleData.items.forEach(i => {
-                    newRows += `
-                        <tr>
-                            <td>${i.name}</td>
-                            <td>${i.qty}</td>
-                            <td>${i.price}</td>
-                            <td align="right">${(i.qty * i.price).toFixed(2)}</td>
-                        </tr>
-                    `;
-                });
-            }
-
-            // Calculations for Footer
-            const retTotal = saleData.returnedItems.reduce((s, i) => s + (i.price * i.qty), 0);
-            const newTotal = saleData.items.reduce((s, i) => s + (i.price * i.qty), 0);
-            const balanceDue = saleData.total; // Net Payable
-
-            let footer = "";
-            if (balanceDue > 0) {
-                footer = `
-                    <tr><td colspan="3" align="right">Subtotal (New):</td><td align="right">${newTotal.toFixed(2)}</td></tr>
-                    <tr><td colspan="3" align="right">Less Return Credit:</td><td align="right">-${retTotal.toFixed(2)}</td></tr>
-                    <tr style="font-weight:bold; font-size:14px;"><td colspan="3" align="right">NET PAYABLE:</td><td align="right">${balanceDue.toFixed(2)}</td></tr>
-                    <tr><td colspan="4" style="border-bottom:1px dashed #000;"></td></tr>
-                    <tr><td colspan="3" align="right">Paid by (${saleData.payMethod}):</td><td align="right">${saleData.cashGiven.toFixed(2)}</td></tr>
-                    <tr><td colspan="3" align="right">Balance:</td><td align="right">${(saleData.cashGiven - balanceDue).toFixed(2)}</td></tr>
-                `;
-            } else {
-                footer = `
-                    <tr><td colspan="3" align="right">Subtotal (New):</td><td align="right">${newTotal.toFixed(2)}</td></tr>
-                    <tr><td colspan="3" align="right">Less Return Credit:</td><td align="right">-${retTotal.toFixed(2)}</td></tr>
-                    <tr style="font-weight:bold; font-size:14px;"><td colspan="3" align="right">REFUND DUE:</td><td align="right">${Math.abs(balanceDue).toFixed(2)}</td></tr>
-                `;
-            }
-
-            const html = `
-                <div style="font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.2;">
-                    <center>
-                        <h2 style="margin:0;">${shopData.name}</h2>
-                        <div>${shopData.address}</div>
-                        <div>Tel: ${shopData.phone}</div>
-                        <br>
-                        <div style="font-weight:bold; font-size:14px;">EXCHANGE BILL</div>
-                        <div>Inv: ${saleData.id}</div>
-                        <div>Ref Inv: ${saleData.refInvoice}</div>
-                        <div>Date: ${dateStr}</div>
-                    </center>
-                    <hr style="border-top: 1px dashed black;">
-                    <table width="100%" style="font-size: 12px;">
-                        <thead>
-                            <tr style="border-bottom: 1px dashed black;">
-                                <th align="left">Item</th>
-                                <th align="left">Qty</th>
-                                <th align="left">Rate</th>
-                                <th align="right">Amt</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${returnRows}
-                            ${newRows}
-                        </tbody>
-                    </table>
-                    <hr style="border-top: 1px dashed black;">
-                    <table width="100%" style="font-size: 12px;">
-                        ${footer}
-                    </table>
-                    <br>
-                    <center>
-                        <div>Thank you for shopping!</div>
-                        <div style="font-size:10px;">System by SmartPOS</div>
-                    </center>
-                </div>
-            `;
-
-            document.getElementById('print-area').innerHTML = html;
-            window.print();
-
-            // Reload after print
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-        }
+        // ================= INIT =================
+        window.onload = () => {
+            calculateValues();
+            loadInitialData();
+        };
     </script>
 </body>
 

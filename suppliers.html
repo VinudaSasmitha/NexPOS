@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Suppliers - POS v3.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-100 font-sans flex items-center justify-center min-h-screen">
+
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-indigo-700"><i class="fas fa-truck-loading mr-2"></i> Add Supplier</h2>
+            <button onclick="window.location.href='dashboard.html'" class="text-gray-500 hover:text-gray-800"><i
+                    class="fas fa-times text-xl"></i></button>
+        </div>
+
+        <form id="supplierForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Supplier Name</label>
+                <input type="text" id="sup_name" class="w-full mt-1 p-2 border rounded-md focus:ring-indigo-500"
+                    required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Phone Number</label>
+                <input type="text" id="sup_phone" class="w-full mt-1 p-2 border rounded-md focus:ring-indigo-500"
+                    required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Email Address (Optional)</label>
+                <input type="email" id="sup_email" class="w-full mt-1 p-2 border rounded-md focus:ring-indigo-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Company Name (Optional)</label>
+                <input type="text" id="sup_company" class="w-full mt-1 p-2 border rounded-md focus:ring-indigo-500">
+            </div>
+
+            <button type="submit"
+                class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition">
+                Save Supplier
+            </button>
+        </form>
+
+        <div id="responseMsg" class="mt-4 text-center hidden p-2 rounded-md font-semibold"></div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('pos_token');
+        if (!token) window.location.href = 'login.html';
+
+        document.getElementById('supplierForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msgDiv = document.getElementById('responseMsg');
+
+            const payload = {
+                Name: document.getElementById('sup_name').value,
+                Phone_Number: document.getElementById('sup_phone').value,
+                Email: document.getElementById('sup_email').value,
+                Company: document.getElementById('sup_company').value
+            };
+
+            try {
+                const response = await fetch('http://localhost:5000/api/suppliers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+
+                msgDiv.classList.remove('hidden');
+                if (response.ok) {
+                    msgDiv.innerText = data.message;
+                    msgDiv.className = "mt-4 text-center p-2 bg-green-100 text-green-700 rounded-md";
+                    e.target.reset();
+                } else {
+                    msgDiv.innerText = "❌ " + (data.details ? data.details[0] : data.message);
+                    msgDiv.className = "mt-4 text-center p-2 bg-red-100 text-red-700 rounded-md";
+                }
+            } catch (err) {
+                msgDiv.innerText = "❌ Server error";
+                msgDiv.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+
+</html>
