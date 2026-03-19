@@ -303,98 +303,143 @@
         const token = localStorage.getItem('pos_token');
         if (!token) window.location.href = 'login.html';
 
+        // ================= ELEMENTS =================
+        const el = (id) => document.getElementById(id);
+
+        const barcode = el('barcode');
+        const prodName = el('prodName');
+        const brandName = el('brandName');
+        const unitType = el('unitType');
+        const sizeWeight = el('sizeWeight');
+        const qty = el('qty');
+        const expireDate = el('expireDate');
+
+        const buyPrice = el('buyPrice');
+        const retailPrice = el('retailPrice');
+        const wholePrice = el('wholePrice');
+
+        const totalBill = el('totalBill');
+        const amountPaid = el('amountPaid');
+
+        const supplierSelect = el('supplierSelect');
+        const supName = el('supName');
+        const supPhone = el('supPhone');
+        const supNotes = el('supNotes');
+
+        const masterForm = el('masterForm');
+        const alertDiv = el('alertMsg');
+
         let suppliersData = [];
 
         // ================= LOAD DATA =================
         async function loadInitialData() {
             try {
-                const supRes = await fetch('http://localhost:5000/api/suppliers', {
+                const res = await fetch('http://localhost:5000/api/suppliers', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                suppliersData = await supRes.json();
+                suppliersData = await res.json();
 
-                const select = document.getElementById('supplierSelect');
-                select.innerHTML = '<option value="NEW">-- Create New Supplier --</option>';
+                supplierSelect.innerHTML = '<option value="NEW">-- Create New Supplier --</option>';
 
                 suppliersData.forEach(s => {
                     const opt = document.createElement('option');
                     opt.value = s.Supplier_ID;
                     opt.textContent = `${s.Name} (${s.Phone_Number || 'No Phone'})`;
-                    select.appendChild(opt);
+                    supplierSelect.appendChild(opt);
                 });
 
                 loadInventoryList();
             } catch (err) {
-                console.error(err);
+                showAlert("❌ Failed to load suppliers", "red");
             }
         }
 
-        // ================= LOAD INVENTORY =================
+        // ================= INVENTORY =================
         async function loadInventoryList() {
-            const res = await fetch('http://localhost:5000/api/recent-inventory', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            try {
+                const res = await fetch('http://localhost:5000/api/recent-inventory', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
 
-            const data = await res.json();
-            const tbody = document.getElementById('inventoryTableBody');
-            tbody.innerHTML = '';
+                const data = await res.json();
+                const tbody = el('inventoryTableBody');
+                tbody.innerHTML = '';
 
-            data.forEach(item => {
-                tbody.innerHTML += `
-        <tr>
-            <td class="p-3">${item.Barcode}</td>
-            <td class="p-3">${item.Product}</td>
-            <td class="p-3">Rs.${item.Cost}</td>
-            <td class="p-3">Rs.${item.Price}</td>
-            <td class="p-3 text-center ${item.Stock < 5 ? 'text-red-500' : 'text-green-600'}">${item.Stock}</td>
-            <td class="p-3 text-center">${item.Batch_Number || '-'}</td>
-        </tr>`;
-            });
+                data.forEach(item => {
+                    tbody.innerHTML += `
+            <tr>
+                <td class="p-3">${item.Barcode}</td>
+                <td class="p-3">${item.Product}</td>
+                <td class="p-3">Rs.${(+item.Cost || 0).toFixed(2)}</td>
+                <td class="p-3">Rs.${(+item.Price || 0).toFixed(2)}</td>
+                <td class="p-3 text-center ${item.Stock < 5 ? 'text-red-500' : 'text-green-600'}">${item.Stock}</td>
+                <td class="p-3 text-center">${item.Batch_Number || '-'}</td>
+            </tr>`;
+                });
+
+            } catch {
+                showAlert("❌ Inventory load failed", "red");
+            }
         }
 
         // ================= CALCULATIONS =================
         function calculateValues() {
-            const buy = parseFloat(buyPrice.value || 0);
-            const sell = parseFloat(retailPrice.value || 0);
-            const quantity = parseInt(qty.value || 0);
+            const buy = +buyPrice.value || 0;
+            const sell = +retailPrice.value || 0;
+            const quantity = +qty.value || 0;
+            const paid = +amountPaid.value || 0;
 
-            document.getElementById('netProfitDisplay').innerText =
-                `Rs. ${(sell - buy).toFixed(2)}`;
+            el('netProfitDisplay').innerText = `Rs. ${(sell - buy).toFixed(2)}`;
 
             const total = buy * quantity;
             totalBill.value = total.toFixed(2);
 
-            const due = total - parseFloat(amountPaid.value || 0);
-            document.getElementById('dueDisplay').innerText =
-                `Rs. ${due.toFixed(2)}`;
+            const due = total - paid;
+            el('dueDisplay').innerText = `Rs. ${due.toFixed(2)}`;
         }
 
         // events
-        [buyPrice, retailPrice, qty, amountPaid].forEach(el => {
-            el.addEventListener('input', calculateValues);
+        [buyPrice, retailPrice, qty, amountPaid].forEach(e => {
+            e.addEventListener('input', calculateValues);
         });
 
-        // ================= AUTO PRODUCT LOAD =================
-        document.getElementById('barcode').addEventListener('blur', async (e) => {
-            const barcode = e.target.value.trim();
-            if (!barcode) return;
+        // ================= SUPPLIER AUTO FILL =================
+        supplierSelect.addEventListener('change', () => {
+            if (supplierSelect.value === "NEW") {
+                supName.value = "";
+                supPhone.value = "";
+                supNotes.value = "";
+                return;
+            }
+
+            const selected = suppliersData.find(s => s.Supplier_ID == supplierSelect.value);
+            if (selected) {
+                supName.value = selected.Name || "";
+                supPhone.value = selected.Phone_Number || "";
+                supNotes.value = selected.Notes || "";
+            }
+        });
+
+        // ================= AUTO PRODUCT =================
+        barcode.addEventListener('blur', async () => {
+            if (!barcode.value) return;
 
             try {
-                const res = await fetch(`http://localhost:5000/api/products/barcode/${barcode}`, {
+                const res = await fetch(`http://localhost:5000/api/products/barcode/${barcode.value}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
                 if (res.ok) {
                     const p = await res.json();
 
-                    prodName.value = p.Name;
+                    prodName.value = p.Name || '';
                     brandName.value = p.Brand || '';
                     unitType.value = p.Unit || '';
                     sizeWeight.value = p.Description || '';
 
-                    if (p.Cost_Price) buyPrice.value = p.Cost_Price;
-                    if (p.Sell_Price) retailPrice.value = p.Sell_Price;
+                    buyPrice.value = p.Cost_Price || 0;
+                    retailPrice.value = p.Sell_Price || 0;
 
                     calculateValues();
                 }
@@ -402,38 +447,40 @@
         });
 
         // ================= BATCH =================
-        function generateBatch(barcode, date) {
+        function generateBatch(code, date) {
             const d = new Date();
             const part = date ? date.replace(/-/g, '') :
                 `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}`;
 
-            return `B-${barcode}-${part}`;
+            return `B-${code}-${part}`;
         }
 
         // ================= SUBMIT =================
-        document.getElementById('masterForm').addEventListener('submit', async (e) => {
+        masterForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const barcodeVal = barcode.value;
+            if (!barcode.value || !prodName.value || qty.value <= 0) {
+                return showAlert("❌ Fill required fields", "red");
+            }
 
             const payload = {
-                Category_ID: parseInt(document.querySelector('input[name="category"]:checked').value),
-                Barcode: barcodeVal,
+                Category_ID: +document.querySelector('input[name="category"]:checked').value,
+                Barcode: barcode.value,
                 Product_Name: prodName.value,
                 Brand_Name: brandName.value,
                 Unit_Type: unitType.value,
                 Size_Weight: sizeWeight.value,
-                Stock_Quantity: parseInt(qty.value),
+                Stock_Quantity: +qty.value,
                 Expire_Date: expireDate.value || null,
-                Batch_Number: generateBatch(barcodeVal, expireDate.value),
+                Batch_Number: generateBatch(barcode.value, expireDate.value),
 
-                Buying_Price: parseFloat(buyPrice.value),
-                Retail_Price: parseFloat(retailPrice.value),
-                Wholesale_Price: parseFloat(wholePrice.value || 0),
+                Buying_Price: +buyPrice.value || 0,
+                Retail_Price: +retailPrice.value || 0,
+                Wholesale_Price: +wholePrice.value || 0,
 
-                Total_Bill: parseFloat(totalBill.value),
-                Amount_Paid: parseFloat(amountPaid.value),
-                Remaining_Due: totalBill.value - amountPaid.value,
+                Total_Bill: +totalBill.value || 0,
+                Amount_Paid: +amountPaid.value || 0,
+                Remaining_Due: (+totalBill.value || 0) - (+amountPaid.value || 0),
 
                 Is_New_Supplier: supplierSelect.value === 'NEW',
                 Supplier_ID: supplierSelect.value === 'NEW' ? null : supplierSelect.value,
@@ -441,8 +488,6 @@
                 Supplier_Phone: supPhone.value,
                 Supplier_Notes: supNotes.value
             };
-
-            const alertDiv = document.getElementById('alertMsg');
 
             try {
                 const res = await fetch('http://localhost:5000/api/master-receive', {
@@ -456,25 +501,35 @@
 
                 const data = await res.json();
 
-                alertDiv.classList.remove('hidden');
-
                 if (res.ok) {
-                    alertDiv.className = "mb-6 p-4 bg-green-100 text-green-700 font-bold text-center";
-                    alertDiv.innerText = `✅ ${data.message}`;
-
+                    showAlert(`✅ ${data.message}`, "green");
                     masterForm.reset();
                     calculateValues();
                     loadInitialData();
                 } else {
-                    alertDiv.className = "mb-6 p-4 bg-red-100 text-red-700 font-bold text-center";
-                    alertDiv.innerText = data.message;
+                    showAlert(data.message || "Error", "red");
                 }
 
             } catch {
-                alertDiv.className = "mb-6 p-4 bg-red-100 text-red-700 font-bold text-center";
-                alertDiv.innerText = "Server Error";
+                showAlert("❌ Server Error", "red");
             }
         });
+
+        // ================= ALERT =================
+        function showAlert(msg, type) {
+            alertDiv.classList.remove('hidden');
+
+            alertDiv.className = `mb-6 p-4 font-bold text-center ${type === "green"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700"
+                }`;
+
+            alertDiv.innerText = msg;
+
+            setTimeout(() => {
+                alertDiv.classList.add('hidden');
+            }, 4000);
+        }
 
         // ================= INIT =================
         window.onload = () => {
