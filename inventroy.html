@@ -331,6 +331,15 @@
 
         let suppliersData = [];
 
+        // ================= SAFE JSON =================
+        async function safeJson(res) {
+            try {
+                return await res.json();
+            } catch {
+                return null;
+            }
+        }
+
         // ================= LOAD DATA =================
         async function loadInitialData() {
             try {
@@ -338,14 +347,17 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                suppliersData = await res.json();
+                const data = await safeJson(res);
+                if (!res.ok || !Array.isArray(data)) throw new Error();
+
+                suppliersData = data;
 
                 supplierSelect.innerHTML = '<option value="NEW">-- Create New Supplier --</option>';
 
                 suppliersData.forEach(s => {
                     const opt = document.createElement('option');
                     opt.value = s.Supplier_ID;
-                    opt.textContent = `${s.Name} (${s.Phone_Number || 'No Phone'})`;
+                    opt.textContent = `${s.Name || 'Unnamed'} (${s.Phone_Number || 'No Phone'})`;
                     supplierSelect.appendChild(opt);
                 });
 
@@ -362,20 +374,24 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                const data = await res.json();
+                const data = await safeJson(res);
+                if (!res.ok || !Array.isArray(data)) throw new Error();
+
                 const tbody = el('inventoryTableBody');
                 tbody.innerHTML = '';
 
                 data.forEach(item => {
+                    const stock = +item.Stock || 0;
+
                     tbody.innerHTML += `
-            <tr>
-                <td class="p-3">${item.Barcode}</td>
-                <td class="p-3">${item.Product}</td>
-                <td class="p-3">Rs.${(+item.Cost || 0).toFixed(2)}</td>
-                <td class="p-3">Rs.${(+item.Price || 0).toFixed(2)}</td>
-                <td class="p-3 text-center ${item.Stock < 5 ? 'text-red-500' : 'text-green-600'}">${item.Stock}</td>
-                <td class="p-3 text-center">${item.Batch_Number || '-'}</td>
-            </tr>`;
+                <tr>
+                    <td class="p-3">${item.Barcode || '-'}</td>
+                    <td class="p-3">${item.Product || '-'}</td>
+                    <td class="p-3">Rs.${(+item.Cost || 0).toFixed(2)}</td>
+                    <td class="p-3">Rs.${(+item.Price || 0).toFixed(2)}</td>
+                    <td class="p-3 text-center ${stock < 5 ? 'text-red-500' : 'text-green-600'}">${stock}</td>
+                    <td class="p-3 text-center">${item.Batch_Number || '-'}</td>
+                </tr>`;
                 });
 
             } catch {
@@ -385,10 +401,10 @@
 
         // ================= CALCULATIONS =================
         function calculateValues() {
-            const buy = +buyPrice.value || 0;
-            const sell = +retailPrice.value || 0;
-            const quantity = +qty.value || 0;
-            const paid = +amountPaid.value || 0;
+            const buy = Math.max(0, +buyPrice.value || 0);
+            const sell = Math.max(0, +retailPrice.value || 0);
+            const quantity = Math.max(0, +qty.value || 0);
+            const paid = Math.max(0, +amountPaid.value || 0);
 
             el('netProfitDisplay').innerText = `Rs. ${(sell - buy).toFixed(2)}`;
 
@@ -413,7 +429,8 @@
                 return;
             }
 
-            const selected = suppliersData.find(s => s.Supplier_ID == supplierSelect.value);
+            const selected = suppliersData.find(s => String(s.Supplier_ID) === supplierSelect.value);
+
             if (selected) {
                 supName.value = selected.Name || "";
                 supPhone.value = selected.Phone_Number || "";
@@ -423,34 +440,37 @@
 
         // ================= AUTO PRODUCT =================
         barcode.addEventListener('blur', async () => {
-            if (!barcode.value) return;
+            if (!barcode.value.trim()) return;
 
             try {
                 const res = await fetch(`http://localhost:5000/api/products/barcode/${barcode.value}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                if (res.ok) {
-                    const p = await res.json();
+                if (!res.ok) return;
 
-                    prodName.value = p.Name || '';
-                    brandName.value = p.Brand || '';
-                    unitType.value = p.Unit || '';
-                    sizeWeight.value = p.Description || '';
+                const p = await safeJson(res);
+                if (!p) return;
 
-                    buyPrice.value = p.Cost_Price || 0;
-                    retailPrice.value = p.Sell_Price || 0;
+                prodName.value = p.Name || '';
+                brandName.value = p.Brand || '';
+                unitType.value = p.Unit || '';
+                sizeWeight.value = p.Description || '';
 
-                    calculateValues();
-                }
+                buyPrice.value = p.Cost_Price || 0;
+                retailPrice.value = p.Sell_Price || 0;
+
+                calculateValues();
             } catch { }
         });
 
         // ================= BATCH =================
         function generateBatch(code, date) {
             const d = new Date();
-            const part = date ? date.replace(/-/g, '') :
-                `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}`;
+
+            const part = date
+                ? date.replace(/-/g, '')
+                : `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}`;
 
             return `B-${code}-${part}`;
         }
@@ -459,17 +479,20 @@
         masterForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            if (!barcode.value || !prodName.value || qty.value <= 0) {
+            if (!barcode.value.trim() || !prodName.value.trim() || +qty.value <= 0) {
                 return showAlert("❌ Fill required fields", "red");
             }
 
+            const total = +totalBill.value || 0;
+            const paid = +amountPaid.value || 0;
+
             const payload = {
                 Category_ID: +document.querySelector('input[name="category"]:checked').value,
-                Barcode: barcode.value,
-                Product_Name: prodName.value,
-                Brand_Name: brandName.value,
-                Unit_Type: unitType.value,
-                Size_Weight: sizeWeight.value,
+                Barcode: barcode.value.trim(),
+                Product_Name: prodName.value.trim(),
+                Brand_Name: brandName.value.trim(),
+                Unit_Type: unitType.value.trim(),
+                Size_Weight: sizeWeight.value.trim(),
                 Stock_Quantity: +qty.value,
                 Expire_Date: expireDate.value || null,
                 Batch_Number: generateBatch(barcode.value, expireDate.value),
@@ -478,15 +501,15 @@
                 Retail_Price: +retailPrice.value || 0,
                 Wholesale_Price: +wholePrice.value || 0,
 
-                Total_Bill: +totalBill.value || 0,
-                Amount_Paid: +amountPaid.value || 0,
-                Remaining_Due: (+totalBill.value || 0) - (+amountPaid.value || 0),
+                Total_Bill: total,
+                Amount_Paid: paid,
+                Remaining_Due: total - paid,
 
                 Is_New_Supplier: supplierSelect.value === 'NEW',
                 Supplier_ID: supplierSelect.value === 'NEW' ? null : supplierSelect.value,
-                Supplier_Name: supName.value,
-                Supplier_Phone: supPhone.value,
-                Supplier_Notes: supNotes.value
+                Supplier_Name: supName.value.trim(),
+                Supplier_Phone: supPhone.value.trim(),
+                Supplier_Notes: supNotes.value.trim()
             };
 
             try {
@@ -499,15 +522,15 @@
                     body: JSON.stringify(payload)
                 });
 
-                const data = await res.json();
+                const data = await safeJson(res);
 
                 if (res.ok) {
-                    showAlert(`✅ ${data.message}`, "green");
+                    showAlert(`✅ ${data?.message || 'Saved successfully'}`, "green");
                     masterForm.reset();
                     calculateValues();
                     loadInitialData();
                 } else {
-                    showAlert(data.message || "Error", "red");
+                    showAlert(data?.message || "Error", "red");
                 }
 
             } catch {
@@ -519,7 +542,7 @@
         function showAlert(msg, type) {
             alertDiv.classList.remove('hidden');
 
-            alertDiv.className = `mb-6 p-4 font-bold text-center ${type === "green"
+            alertDiv.className = `mb-6 p-4 font-bold text-center rounded ${type === "green"
                     ? "bg-green-100 text-green-700"
                     : "bg-red-100 text-red-700"
                 }`;
