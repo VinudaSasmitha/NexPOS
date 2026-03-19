@@ -149,7 +149,7 @@
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-1">Stock Quantity *</label>
                         <input type="number" id="qty" class="w-full p-2.5 border border-gray-300 rounded outline-none"
-                            value="0" min="1" required>
+                            value="0" min="0" step="any" required>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-1">Expire Date</label>
@@ -298,7 +298,6 @@
         </div>
     </div>
 
-    <!-- ONLY CHANGED PARTS SHOWN (FULL FILE SAME, JUST SCRIPT UPDATED) -->
     <script>
         const token = localStorage.getItem('pos_token');
         if (!token) window.location.href = 'login.html';
@@ -438,20 +437,42 @@
             }
         });
 
+        // ================= BARCODE SCALE PARSER =================
+        function parseScaleBarcode(scannedCode) {
+            // EAN-13 Barcode Scale Parser (Starts with 21 or 20)
+            if (scannedCode.length === 13 && (scannedCode.startsWith('21') || scannedCode.startsWith('20'))) {
+                const pluCode = scannedCode.substring(2, 7); // e.g. 00015
+                const weightRaw = scannedCode.substring(7, 12); // e.g. 01500
+                const weightKg = parseInt(weightRaw) / 1000; // 1.5 kg
+
+                return { isScale: true, productCode: pluCode, weight: weightKg };
+            }
+            return { isScale: false, barcode: scannedCode };
+        }
+
         // ================= AUTO PRODUCT =================
-        barcode.addEventListener('blur', async () => {
-            if (!barcode.value.trim()) return;
+        async function fetchProductData(scannedCode) {
+            if (!scannedCode) return;
+
+            const parsedData = parseScaleBarcode(scannedCode);
+            // Search DB with PLU if scale barcode, else full barcode
+            const searchCode = parsedData.isScale ? parsedData.productCode : parsedData.barcode;
 
             try {
-                const res = await fetch(`http://localhost:5000/api/products/barcode/${barcode.value}`, {
+                const res = await fetch(`http://localhost:5000/api/products/barcode/${searchCode}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                if (!res.ok) return;
+                if (!res.ok) {
+                    // Do not show error on new items, just let them type
+                    return;
+                }
 
                 const p = await safeJson(res);
                 if (!p) return;
 
+                // Show the base product code in the UI
+                barcode.value = searchCode;
                 prodName.value = p.Name || '';
                 brandName.value = p.Brand || '';
                 unitType.value = p.Unit || '';
@@ -460,8 +481,35 @@
                 buyPrice.value = p.Cost_Price || 0;
                 retailPrice.value = p.Sell_Price || 0;
 
+                if (parsedData.isScale) {
+                    qty.value = parsedData.weight;
+                    showAlert(`⚡ Scale detected! Auto-filled weight: ${parsedData.weight} Kg`, "green");
+                } else {
+                    showAlert("⚡ Product details auto-filled!", "green");
+                }
+
                 calculateValues();
             } catch { }
+        }
+
+        // 1. Mouse එක එලියෙන් ක්ලික් කරද්දී Auto-fill වෙන්න
+        barcode.addEventListener('blur', () => fetchProductData(barcode.value.trim()));
+
+        // 2. Scanner එකෙන් Enter එබෙද්දී Auto-fill වෙන්න
+        barcode.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+
+                const scannedValue = barcode.value.trim();
+                fetchProductData(scannedValue);
+
+                const parsedData = parseScaleBarcode(scannedValue);
+                if (!parsedData.isScale) {
+                    qty.focus();
+                } else {
+                    amountPaid.focus();
+                }
+            }
         });
 
         // ================= BATCH =================
@@ -543,8 +591,8 @@
             alertDiv.classList.remove('hidden');
 
             alertDiv.className = `mb-6 p-4 font-bold text-center rounded ${type === "green"
-                    ? "bg-green-100 text-green-700"
-                    : "bg-red-100 text-red-700"
+                ? "bg-green-100 text-green-700"
+                : "bg-red-100 text-red-700"
                 }`;
 
             alertDiv.innerText = msg;
