@@ -30,7 +30,7 @@ const loginLimiter = rateLimit({
 // ===============================
 // DB CONNECTION (POOL)
 // ===============================
-const db = mysql.createPool({
+const pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
@@ -45,7 +45,7 @@ const SECRET = process.env.JWT_SECRET || "supersecret_change_in_production";
 // ===============================
 function query(sql, params = []) {
     return new Promise((resolve, reject) => {
-        db.query(sql, params, (err, result) => {
+        pool.query(sql, params, (err, result) => {
             if (err) return reject(err);
             resolve(result);
         });
@@ -186,6 +186,47 @@ const schemas = {
         Phone_Number: Joi.string().max(20).required(),
         Email: Joi.string().email().optional().allow(''),
         Company: Joi.string().max(150).optional().allow('')
+    }),
+    transferInventory: Joi.object({
+        Product_ID: Joi.number().integer().required(),
+        From_Warehouse_ID: Joi.number().integer().required(),
+        To_Branch_ID: Joi.number().integer().required(),
+        Quantity: Joi.number().integer().min(1).required()
+    }),
+    quickStockAdjust: Joi.object({
+        Barcode: Joi.string().max(100).required(),
+        Qty: Joi.number().integer().min(1).required(),
+        Type: Joi.string().valid('ADD', 'REMOVE').required()
+    }),
+    masterReceive: Joi.object({
+        Category_ID: Joi.number().integer().required(),
+        Barcode: Joi.string().max(100).required(),
+        Product_Name: Joi.string().max(150).required(),
+        Brand_Name: Joi.string().max(100).optional().allow(''),
+        Unit_Type: Joi.string().max(50).required(),
+        Size_Weight: Joi.string().max(255).optional().allow(''),
+        Stock_Quantity: Joi.number().integer().min(1).required(),
+        Expire_Date: Joi.date().optional().allow(null),
+        Batch_Number: Joi.string().max(100).optional().allow('', null),
+        Buying_Price: Joi.number().positive().required(),
+        Retail_Price: Joi.number().positive().required(),
+        Wholesale_Price: Joi.number().min(0).default(0),
+        Total_Bill: Joi.number().min(0).required(),
+        Amount_Paid: Joi.number().min(0).required(),
+        Remaining_Due: Joi.number().min(0).required(),
+        Is_New_Supplier: Joi.boolean().required(),
+        Supplier_ID: Joi.number().integer().optional().allow(null),
+        Supplier_Name: Joi.string().max(100).when('Is_New_Supplier', {
+            is: true,
+            then: Joi.required(),
+            otherwise: Joi.optional().allow('', null)
+        }),
+        Supplier_Phone: Joi.string().max(20).when('Is_New_Supplier', {
+            is: true,
+            then: Joi.required(),
+            otherwise: Joi.optional().allow('', null)
+        }),
+        Supplier_Notes: Joi.string().max(500).optional().allow('', null)
     })
 };
 
@@ -241,7 +282,6 @@ app.post(
 // ===============================
 app.post('/api/login', loginLimiter, validate(schemas.login), async (req, res) => {
     try {
-        console.log("👉 Login Request ආවා:", req.body.Email);
         const { Email, Password } = req.body;
 
         const result = await query(
@@ -386,9 +426,11 @@ app.get(
                 SELECT 
                     p.Product_ID, p.Name, p.Category_ID, p.Brand, p.Description, p.Barcode, p.Unit,
                     pp.Sell_Price, pp.Cost_Price, pp.Wholesale_Price, pp.Tax_Percentage,
-                    IFNULL(i.Quantity, 0) AS Quantity, i.Branch_ID,
-                    i.Batch_Number, i.Expire_Date,
-                    CASE WHEN i.Expire_Date < CURDATE() THEN TRUE ELSE FALSE END AS Is_Expired
+                    COALESCE(SUM(i.Quantity), 0) AS Quantity,
+                    MAX(i.Branch_ID) AS Branch_ID,
+                    MAX(i.Batch_Number) AS Batch_Number,
+                    MIN(i.Expire_Date) AS Expire_Date,
+                    CASE WHEN MIN(i.Expire_Date) < CURDATE() THEN TRUE ELSE FALSE END AS Is_Expired
                 FROM Products p
                 LEFT JOIN Product_Prices pp ON pp.Price_ID = (
                     SELECT Price_ID FROM Product_Prices
@@ -403,6 +445,7 @@ app.get(
                 sql += " AND i.Branch_ID = ?";
                 params.push(branchId);
             }
+            sql += " GROUP BY p.Product_ID, p.Name, p.Category_ID, p.Brand, p.Description, p.Barcode, p.Unit, pp.Sell_Price, pp.Cost_Price, pp.Wholesale_Price, pp.Tax_Percentage";
             const result = await query(sql, params);
             res.json(result);
         } catch (err) {
@@ -417,18 +460,22 @@ app.get(
     authorizeRoles('Admin', 'Cashier', 'Sales Manager', 'Branch Manager', 'Inventory Manager'),
     async (req, res) => {
         try {
-            const result = await query(
-                `SELECT p.*, pp.Sell_Price, pp.Cost_Price, pp.Wholesale_Price, pp.Tax_Percentage, IFNULL(i.Quantity, 0) AS Quantity
+            const params = [req.params.barcode];
+            let sql = `SELECT p.*, pp.Sell_Price, pp.Cost_Price, pp.Wholesale_Price, pp.Tax_Percentage, COALESCE(SUM(i.Quantity), 0) AS Quantity
                  FROM Products p
                  LEFT JOIN Product_Prices pp ON pp.Price_ID = (
                      SELECT Price_ID FROM Product_Prices
                      WHERE Product_ID = p.Product_ID
                      ORDER BY Effective_Date DESC LIMIT 1
                  )
-                 LEFT JOIN Inventory i ON p.Product_ID = i.Product_ID AND i.Branch_ID = ?
-                 WHERE p.Barcode = ? AND p.Is_Deleted = FALSE`,
-                [req.user.branchId || 1, req.params.barcode]
-            );
+                 LEFT JOIN Inventory i ON p.Product_ID = i.Product_ID
+                 WHERE p.Barcode = ? AND p.Is_Deleted = FALSE`;
+            if (req.user.branchId) {
+                sql += " AND i.Branch_ID = ?";
+                params.push(req.user.branchId);
+            }
+            sql += " GROUP BY p.Product_ID, pp.Sell_Price, pp.Cost_Price, pp.Wholesale_Price, pp.Tax_Percentage";
+            const result = await query(sql, params);
             if (result.length === 0) return res.status(404).json({ message: 'Product not found' });
             res.json(result[0]);
         } catch (err) {
@@ -447,7 +494,7 @@ app.get(
             let sql = `
                 SELECT p.Product_ID, p.Name, p.Brand, p.Barcode, p.Unit,
                        pp.Sell_Price, pp.Tax_Percentage,
-                       IFNULL(i.Quantity, 0) AS Quantity
+                       COALESCE(SUM(i.Quantity), 0) AS Quantity
                 FROM Products p
                 LEFT JOIN Product_Prices pp ON pp.Price_ID = (
                     SELECT Price_ID FROM Product_Prices
@@ -462,6 +509,7 @@ app.get(
                 sql += " AND i.Branch_ID = ?";
                 params.push(branchId);
             }
+            sql += " GROUP BY p.Product_ID, p.Name, p.Brand, p.Barcode, p.Unit, pp.Sell_Price, pp.Tax_Percentage";
             sql += " LIMIT 20";
             const result = await query(sql, params);
             res.json(result);
@@ -565,10 +613,11 @@ app.post(
     '/api/inventory/transfer',
     authenticateToken,
     authorizeRoles('Admin', 'Warehouse Manager', 'Inventory Manager'),
+    validate(schemas.transferInventory),
     async (req, res) => {
         const { Product_ID, From_Warehouse_ID, To_Branch_ID, Quantity } = req.body;
 
-        db.getConnection(async (err, conn) => {
+        pool.getConnection(async (err, conn) => {
             if (err) return res.status(500).json({ message: 'Connection error' });
             try {
                 await queryConn(conn, 'START TRANSACTION');
@@ -631,7 +680,7 @@ app.post(
             }
         }
 
-        db.getConnection(async (err, conn) => {
+        pool.getConnection(async (err, conn) => {
             if (err) return res.status(500).json({ message: 'Connection error' });
             try {
                 await queryConn(conn, 'START TRANSACTION');
@@ -717,9 +766,13 @@ app.get(
 // ===============================
 // 💳 PAYMENTS & 🔁 RETURNS
 // ===============================
-app.post('/api/payments', authenticateToken, validate(schemas.payment), async (req, res) => {
+app.post('/api/payments', authenticateToken, authorizeRoles('Admin', 'Cashier', 'Sales Manager'), validate(schemas.payment), async (req, res) => {
     try {
         const { Bill_ID, Method, Amount, Loan_Name, Loan_Phone_Number } = req.body;
+        const bill = await query("SELECT Bill_ID FROM Bills WHERE Bill_ID = ?", [Bill_ID]);
+        if (!bill.length) {
+            return res.status(404).json({ message: 'Bill not found' });
+        }
         await query(
             "INSERT INTO Payments (Bill_ID, Method, Amount, Loan_Name, Loan_Phone_Number, Cashier_ID) VALUES (?,?,?,?,?,?)",
             [Bill_ID, Method, Amount, Loan_Name || null, Loan_Phone_Number || null, req.user.id]
@@ -729,36 +782,86 @@ app.post('/api/payments', authenticateToken, validate(schemas.payment), async (r
     } catch (err) { res.status(500).json({ message: 'Server error' }); }
 });
 
-app.post('/api/returns', authenticateToken, authorizeRoles('Admin', 'Cashier', 'Sales Manager'), validate(schemas.returns), async (req, res) => {
-    const { Bill_ID, Product_ID, Quantity, Reason, Refund_Amount, Branch_ID, Payment_Method } = req.body;
-    db.getConnection(async (err, conn) => {
-        if (err) return res.status(500).json({ message: 'Connection error' });
-        try {
-            await queryConn(conn, 'START TRANSACTION');
-            const methodRow = await queryConn(conn, "SELECT Method_ID FROM Payment_Methods WHERE Method_Name = ? AND Is_Active = TRUE", [Payment_Method]);
-            if (!methodRow.length) throw { message: 'Invalid payment method' };
+// ==========================================
+// 📦 PRO MASTER RECEIVE (GRN / STOCK IN) - SMART BATCHING
+// ==========================================
 
-            const returnResult = await queryConn(conn, "INSERT INTO Returns (Bill_ID, Product_ID, Quantity, Reason, Refund_Amount, Method_ID, Cashier_ID) VALUES (?,?,?,?,?,?,?)", [Bill_ID, Product_ID, Quantity, Reason, Refund_Amount, methodRow[0].Method_ID, req.user.id]);
-            await queryConn(conn, "UPDATE Inventory SET Quantity=Quantity+? WHERE Product_ID=? AND Branch_ID=?", [Quantity, Product_ID, Branch_ID]);
-            await queryConn(conn, "INSERT INTO Stock_Movements (Product_ID, Branch_ID, Quantity_In, Reason, Reference_Type, Reference_ID) VALUES (?,?,?,'RETURN','RETURN',?)", [Product_ID, Branch_ID, Quantity, returnResult.insertId]);
 
-            await queryConn(conn, 'COMMIT');
-            await auditLog(req.user.id, `Return processed — Bill: ${Bill_ID}`, 'Returns', returnResult.insertId, getIp(req));
-            res.status(201).json({ message: '↩️ Return Processed' });
-        } catch (error) { await queryConn(conn, 'ROLLBACK'); res.status(400).json({ message: error.message }); }
-        finally { conn.release(); }
-    });
-});
 
 // ===============================
 // 📊 DASHBOARD & REPORTS
 // ===============================
+app.post(
+    '/api/returns',
+    authenticateToken,
+    authorizeRoles('Admin', 'Cashier', 'Sales Manager'),
+    validate(schemas.returns),
+    async (req, res) => {
+        const { Bill_ID, Product_ID, Quantity, Reason, Refund_Amount, Branch_ID, Payment_Method } = req.body;
+
+        pool.getConnection(async (err, conn) => {
+            if (err) return res.status(500).json({ message: 'Connection error' });
+
+            try {
+                await queryConn(conn, 'START TRANSACTION');
+
+                const billItem = await queryConn(
+                    conn,
+                    "SELECT Quantity FROM Bill_Items WHERE Bill_ID = ? AND Product_ID = ?",
+                    [Bill_ID, Product_ID]
+                );
+                if (!billItem.length) throw new Error('Bill item not found');
+                if (Quantity > billItem[0].Quantity) throw new Error('Return quantity exceeds sold quantity');
+
+                const paymentResult = await queryConn(
+                    conn,
+                    "INSERT INTO Payments (Bill_ID, Method, Amount, Cashier_ID) VALUES (?, ?, ?, ?)",
+                    [Bill_ID, Payment_Method, Refund_Amount, req.user.id]
+                );
+
+                const returnResult = await queryConn(
+                    conn,
+                    "INSERT INTO Returns (Bill_ID, Product_ID, Quantity, Reason, Refund_Amount, Payment_ID, Cashier_ID, Branch_ID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    [Bill_ID, Product_ID, Quantity, Reason || null, Refund_Amount, paymentResult.insertId, req.user.id, Branch_ID]
+                );
+
+                await queryConn(
+                    conn,
+                    `INSERT INTO Inventory (Product_ID, Branch_ID, Quantity)
+                     VALUES (?, ?, ?)
+                     ON DUPLICATE KEY UPDATE Quantity = Quantity + VALUES(Quantity)`,
+                    [Product_ID, Branch_ID, Quantity]
+                );
+
+                await queryConn(
+                    conn,
+                    "INSERT INTO Stock_Movements (Product_ID, Branch_ID, Quantity_In, Reason, Reference_Type, Reference_ID) VALUES (?,?,?,'RETURN','RETURN',?)",
+                    [Product_ID, Branch_ID, Quantity, returnResult.insertId]
+                );
+
+                await queryConn(conn, 'COMMIT');
+                await auditLog(req.user.id, `Return processed for bill ${Bill_ID}`, 'Returns', returnResult.insertId, getIp(req));
+                res.status(201).json({ message: 'Return processed' });
+            } catch (error) {
+                await queryConn(conn, 'ROLLBACK');
+                res.status(400).json({ message: error.message || 'Return failed' });
+            } finally {
+                conn.release();
+            }
+        });
+    }
+);
+
 app.get('/api/dashboard/sales', authenticateToken, async (req, res) => {
     try {
         let sql = `SELECT b.Branch_ID, br.Name AS Branch_Name, SUM(b.Total_Amount) AS Total_Sales, SUM(b.Tax_Amount) AS Total_Tax, COUNT(*) AS Total_Bills, DATE(b.Created_At) AS Sale_Date FROM Bills b JOIN Branches br ON b.Branch_ID = br.Branch_ID`;
-        if (req.user.branchId) sql += ` WHERE b.Branch_ID = ${req.user.branchId}`;
+        const params = [];
+        if (req.user.branchId) {
+            sql += ` WHERE b.Branch_ID = ?`;
+            params.push(req.user.branchId);
+        }
         sql += ` GROUP BY b.Branch_ID, DATE(b.Created_At) ORDER BY Sale_Date DESC`;
-        const result = await query(sql);
+        const result = await query(sql, params);
         res.json(result);
     } catch (err) { res.status(500).json({ message: 'Server error' }); }
 });
@@ -766,8 +869,12 @@ app.get('/api/dashboard/sales', authenticateToken, async (req, res) => {
 app.get('/api/dashboard/lowstock', authenticateToken, async (req, res) => {
     try {
         let sql = `SELECT p.Name, p.Barcode, i.Quantity, br.Name AS Branch_Name FROM Inventory i JOIN Products p ON i.Product_ID = p.Product_ID JOIN Branches br ON i.Branch_ID = br.Branch_ID WHERE i.Quantity <= 5 AND p.Is_Deleted = FALSE`;
-        if (req.user.branchId) sql += ` AND i.Branch_ID = ${req.user.branchId}`;
-        const result = await query(sql);
+        const params = [];
+        if (req.user.branchId) {
+            sql += ` AND i.Branch_ID = ?`;
+            params.push(req.user.branchId);
+        }
+        const result = await query(sql, params);
         res.json(result);
     } catch (err) { res.status(500).json({ message: 'Server error' }); }
 });
@@ -833,10 +940,6 @@ app.get('/api/branches', authenticateToken, async (req, res) => {
     } catch (err) { res.status(500).json({ message: 'Server error' }); }
 });
 
-app.get('/api/make-hash', async (req, res) => {
-    const hash = await bcrypt.hash('admin123', 12);
-    res.send(hash);
-});
 
 // ==========================================
 // 🏭 SUPPLIERS (NEW)
@@ -852,7 +955,7 @@ app.post('/api/suppliers', authenticateToken, authorizeRoles('Admin', 'Inventory
     } catch (err) { res.status(500).json({ message: 'Server error', error: err.message }); }
 });
 
-app.get('/api/suppliers', authenticateToken, async (req, res) => {
+app.get('/api/suppliers', authenticateToken, authorizeRoles('Admin', 'Inventory Manager', 'Warehouse Manager', 'Branch Manager'), async (req, res) => {
     try {
         const result = await query("SELECT * FROM Suppliers WHERE Is_Deleted = FALSE ORDER BY Name");
         res.json(result);
@@ -862,7 +965,11 @@ app.get('/api/suppliers', authenticateToken, async (req, res) => {
 // ==========================================
 // 📦 PRO MASTER RECEIVE (GRN / STOCK IN) 
 // ==========================================
-app.post('/api/master-receive', authenticateToken, authorizeRoles('Admin', 'Inventory Manager', 'Branch Manager'), async (req, res) => {
+app.post('/api/master-receive',
+    authenticateToken,
+    authorizeRoles('Admin', 'Inventory Manager', 'Branch Manager'),
+    validate(schemas.masterReceive),
+    async (req, res) => {
     const {
         Category_ID, Barcode, Product_Name, Brand_Name, Unit_Type, Size_Weight,
         Stock_Quantity, Expire_Date, Batch_Number,
@@ -875,7 +982,7 @@ app.post('/api/master-receive', authenticateToken, authorizeRoles('Admin', 'Inve
     const userId = req.user.id;
 
     // Use queryConn wrapper to maintain compatibility with existing pool setup
-    db.getConnection(async (err, conn) => {
+    pool.getConnection(async (err, conn) => {
         if (err) return res.status(500).json({ message: 'Database connection error' });
 
         try {
@@ -885,10 +992,14 @@ app.post('/api/master-receive', authenticateToken, authorizeRoles('Admin', 'Inve
             let finalSupplierId = Supplier_ID;
             if (Is_New_Supplier) {
                 const supResult = await queryConn(conn,
-                    "INSERT INTO Suppliers (Name, Phone_Number, Notes) VALUES (?, ?, ?)",
-                    [Supplier_Name, Supplier_Phone, Supplier_Notes]
+                    "INSERT INTO Suppliers (Name, Phone_Number) VALUES (?, ?)",
+                    [Supplier_Name, Supplier_Phone]
                 );
                 finalSupplierId = supResult.insertId;
+            }
+
+            if (!finalSupplierId) {
+                throw new Error('Supplier is required');
             }
 
             // 🔥 2. SECURE BACKEND BARCODE CHECK
@@ -957,10 +1068,16 @@ app.post('/api/master-receive', authenticateToken, authorizeRoles('Admin', 'Inve
             }
 
             // 6. SUPPLIER LIFETIME PURCHASE
-            await queryConn(conn,
-                "UPDATE Suppliers SET Lifetime_Total_Purchase = Lifetime_Total_Purchase + ? WHERE Supplier_ID = ?",
-                [Total_Bill, finalSupplierId]
-            );
+            try {
+                await queryConn(conn,
+                    "UPDATE Suppliers SET Lifetime_Total_Purchase = Lifetime_Total_Purchase + ? WHERE Supplier_ID = ?",
+                    [Total_Bill, finalSupplierId]
+                );
+            } catch (supplierUpdateError) {
+                if (supplierUpdateError.code !== 'ER_BAD_FIELD_ERROR') {
+                    throw supplierUpdateError;
+                }
+            }
 
             await queryConn(conn, 'COMMIT');
             await auditLog(userId, `${isExisting ? 'Updated' : 'Added'} product ${Product_Name} via GRN`, 'Inventory', null, getIp(req));
@@ -984,6 +1101,7 @@ app.post('/api/master-receive', authenticateToken, authorizeRoles('Admin', 'Inve
 // ==========================================
 app.get('/api/recent-inventory', authenticateToken, async (req, res) => {
     try {
+        const branchId = req.user.branchId;
         const sql = `
             SELECT p.Barcode, p.Name AS Product, pp.Cost_Price AS Cost, pp.Sell_Price AS Price, i.Quantity AS Stock, i.Batch_Number 
             FROM Products p
@@ -991,11 +1109,98 @@ app.get('/api/recent-inventory', authenticateToken, async (req, res) => {
             LEFT JOIN Product_Prices pp ON pp.Price_ID = (
                 SELECT Price_ID FROM Product_Prices WHERE Product_ID = p.Product_ID ORDER BY Effective_Date DESC LIMIT 1
             )
+            ${branchId ? 'WHERE i.Branch_ID = ?' : ''}
             ORDER BY p.Product_ID DESC LIMIT 10
         `;
-        const result = await query(sql);
+        const result = await query(sql, branchId ? [branchId] : []);
         res.json(result);
     } catch (err) { res.status(500).json({ message: 'Server error' }); }
+});
+
+// ==========================================
+// 📦 PRO STOCK MANAGEMENT API (FOR STOCK.HTML)
+// ==========================================
+app.get('/api/stock-management', authenticateToken, async (req, res) => {
+    try {
+        const branchId = req.user.branchId;
+        if (!branchId) {
+            return res.status(400).json({ message: 'Branch assignment required' });
+        }
+        // Products, Inventory, Categories, Suppliers, Prices ඔක්කොම එකතු කරලා ගන්නවා
+        const sql = `
+            SELECT 
+                i.Inventory_ID, i.Batch_Number, i.Expire_Date, i.Quantity AS Stock,
+                p.Product_ID, p.Barcode, p.Name AS Product_Name, p.Brand, p.Description AS Size,
+                c.Category_Name,
+                s.Supplier_ID, s.Name AS Supplier_Name,
+                pp.Cost_Price, pp.Sell_Price
+            FROM Inventory i
+            JOIN Products p ON i.Product_ID = p.Product_ID
+            LEFT JOIN Categories c ON p.Category_ID = c.Category_ID
+            LEFT JOIN Suppliers s ON i.Supplier_ID = s.Supplier_ID
+            LEFT JOIN Product_Prices pp ON pp.Price_ID = (
+                SELECT Price_ID FROM Product_Prices WHERE Product_ID = p.Product_ID ORDER BY Effective_Date DESC LIMIT 1
+            )
+            WHERE i.Branch_ID = ? AND p.Is_Deleted = FALSE
+            ORDER BY i.Expire_Date ASC, p.Name ASC
+        `;
+        const result = await query(sql, [branchId]);
+        res.json(result);
+    } catch (err) {
+        console.error("Stock API Error:", err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// ⚡ QUICK STOCK ADJUST API (For the Quick Stock Bar)
+app.post('/api/stock/quick-adjust', authenticateToken, authorizeRoles('Admin', 'Inventory Manager', 'Branch Manager', 'Warehouse Manager'), validate(schemas.quickStockAdjust), async (req, res) => {
+    const { Barcode, Qty, Type } = req.body; // Type = 'ADD' or 'REMOVE'
+    const branchId = req.user.branchId;
+
+    if (!branchId) {
+        return res.status(400).json({ message: 'Branch assignment required' });
+    }
+
+    pool.getConnection(async (err, conn) => {
+        if (err) return res.status(500).json({ message: 'Database connection error' });
+
+        try {
+            await queryConn(conn, 'START TRANSACTION');
+
+            const prod = await queryConn(conn, "SELECT Product_ID FROM Products WHERE Barcode = ?", [Barcode]);
+            if (prod.length === 0) throw new Error("Product not found in system.");
+            const productId = prod[0].Product_ID;
+
+            // Get the specific inventory record (first available batch)
+            const inv = await queryConn(conn,
+                "SELECT Inventory_ID, Quantity FROM Inventory WHERE Product_ID = ? AND Branch_ID = ? ORDER BY Expire_Date ASC LIMIT 1 FOR UPDATE",
+                [productId, branchId]
+            );
+
+            if (inv.length === 0) throw new Error("No inventory record found.");
+            const inventoryId = inv[0].Inventory_ID;
+
+            let newQty;
+            if (Type === 'ADD') {
+                newQty = inv[0].Quantity + Number(Qty);
+                await queryConn(conn, "INSERT INTO Stock_Movements (Product_ID, Branch_ID, Quantity_In, Reason) VALUES (?, ?, ?, 'QUICK_ADD')", [productId, branchId, Qty]);
+            } else {
+                if (inv[0].Quantity < Number(Qty)) throw new Error("Insufficient stock to remove.");
+                newQty = inv[0].Quantity - Number(Qty);
+                await queryConn(conn, "INSERT INTO Stock_Movements (Product_ID, Branch_ID, Quantity_Out, Reason) VALUES (?, ?, ?, 'QUICK_REMOVE')", [productId, branchId, Qty]);
+            }
+
+            await queryConn(conn, "UPDATE Inventory SET Quantity = ? WHERE Inventory_ID = ?", [newQty, inventoryId]);
+
+            await queryConn(conn, 'COMMIT');
+            res.json({ message: `Stock ${Type === 'ADD' ? 'Added' : 'Removed'} Successfully! ✅` });
+        } catch (err) {
+            await queryConn(conn, 'ROLLBACK');
+            res.status(400).json({ message: err.message });
+        } finally {
+            conn.release();
+        }
+    });
 });
 
 // ===============================

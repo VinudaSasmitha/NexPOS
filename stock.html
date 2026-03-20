@@ -32,18 +32,20 @@
                 </div>
                 <div
                     class="bg-green-500 text-white w-12 h-12 rounded-lg flex items-center justify-center text-xl shadow-md">
-                    <i class="fas fa-cubes"></i></div>
+                    <i class="fas fa-cubes"></i>
+                </div>
             </div>
 
             <div
                 class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-yellow-400 flex justify-between items-center">
                 <div>
-                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Low Stock (<10)< /p>
-                            <h2 class="text-3xl font-black text-gray-800" id="kpiLowStock">0</h2>
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Low Stock (&lt;10)</p>
+                    <h2 class="text-3xl font-black text-gray-800" id="kpiLowStock">0</h2>
                 </div>
                 <div
                     class="bg-yellow-400 text-white w-12 h-12 rounded-lg flex items-center justify-center text-xl shadow-md">
-                    <i class="fas fa-sort-amount-down"></i></div>
+                    <i class="fas fa-sort-amount-down"></i>
+                </div>
             </div>
 
             <div
@@ -54,7 +56,8 @@
                 </div>
                 <div
                     class="bg-orange-500 text-white w-12 h-12 rounded-lg flex items-center justify-center text-xl shadow-md">
-                    <i class="fas fa-stopwatch"></i></div>
+                    <i class="fas fa-stopwatch"></i>
+                </div>
             </div>
 
             <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-red-500 flex justify-between items-center">
@@ -64,7 +67,8 @@
                 </div>
                 <div
                     class="bg-red-500 text-white w-12 h-12 rounded-lg flex items-center justify-center text-xl shadow-md">
-                    <i class="fas fa-file-invoice-dollar"></i></div>
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </div>
             </div>
         </div>
 
@@ -175,6 +179,7 @@
         if (!token) window.location.href = 'login.html';
 
         let fullInventory = []; // To hold all data for searching
+        let alertTimeout; // Fix 2: Global timeout variable
 
         // Utility to format currency
         const currency = (num) => 'Rs. ' + Number(num).toFixed(2);
@@ -185,11 +190,16 @@
                 const res = await fetch('http://localhost:5000/api/stock-management', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if (!res.ok) throw new Error('Failed to fetch data');
-                fullInventory = await res.json();
+
+                // Fix 5: Backend Error Handling 
+                const result = await res.json();
+                if (!res.ok) throw new Error(result.message || 'Error fetching data');
+
+                fullInventory = result;
                 processAndRenderData(fullInventory);
             } catch (err) {
                 console.error(err);
+                showQuickAlert("❌ Network or Server Error", "red");
             }
         }
 
@@ -225,36 +235,32 @@
                     if (diffDays < 0) isExpired = true;
                     else if (diffDays <= 30) {
                         isExpiringSoon = true;
-                        if (qty > 0) expiringCount++;
+                        // Fix 4: KPI Counting (Units expiring, not rows)
+                        if (qty > 0) expiringCount += qty;
                     }
                 }
 
-                // If expired and we have stock left, it's a loss
                 if (isExpired && qty > 0) {
                     expiredStock.push(item);
                     totalLossValue += (cost * qty);
                 } else {
-                    // It is active stock
                     activeStock.push({ ...item, isExpiringSoon });
                     totalQty += qty;
                     if (qty > 0 && qty < 10) lowCount++;
                 }
             });
 
-            // Update KPIs
             document.getElementById('kpiTotalStock').innerText = totalQty;
             document.getElementById('kpiLowStock').innerText = lowCount;
             document.getElementById('kpiExpiring').innerText = expiringCount;
             document.getElementById('kpiLossVal').innerText = currency(totalLossValue);
             document.getElementById('totalLossText').innerText = `Total Loss: ${currency(totalLossValue)}`;
 
-            // Render Tables
             renderActiveTable(activeStock);
             renderExpiredTable(expiredStock);
             updateCategoryDropdown(categories);
         }
 
-        // Render Active Stock Table
         function renderActiveTable(data) {
             const tbody = document.getElementById('activeStockBody');
             tbody.innerHTML = '';
@@ -262,7 +268,6 @@
             data.forEach(item => {
                 const qty = Number(item.Stock);
 
-                // Status Badge Logic
                 let statusHtml = `<span class="bg-green-100 text-green-700 px-2 py-1 rounded font-bold text-[10px]">GOOD</span>`;
                 if (qty <= 0) statusHtml = `<span class="bg-red-100 text-red-700 px-2 py-1 rounded font-bold text-[10px]">OUT OF STOCK</span>`;
                 else if (qty < 10) statusHtml = `<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded font-bold text-[10px]">LOW STOCK</span>`;
@@ -292,7 +297,6 @@
             });
         }
 
-        // Render Expired/Loss Table
         function renderExpiredTable(data) {
             const tbody = document.getElementById('expiredStockBody');
             tbody.innerHTML = '';
@@ -322,11 +326,10 @@
             });
         }
 
-        // ⚡ Quick Stock Logic (Send request to backend)
+        // ⚡ Quick Stock Logic
         async function adjustQuickStock(type) {
             const barcode = document.getElementById('qsBarcode').value.trim();
             const qty = document.getElementById('qsQty').value.trim();
-            const alertDiv = document.getElementById('quickAlert');
 
             if (!barcode || !qty || qty <= 0) {
                 showQuickAlert("❌ Enter valid Barcode and Quantity", "red");
@@ -334,6 +337,7 @@
             }
 
             try {
+                // Fix 5: Backend Error Handling 
                 const res = await fetch('http://localhost:5000/api/stock/quick-adjust', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -342,25 +346,55 @@
 
                 const result = await res.json();
 
-                if (res.ok) {
-                    showQuickAlert(result.message, "green");
-                    document.getElementById('qsBarcode').value = '';
-                    document.getElementById('qsQty').value = '';
-                    fetchStockData(); // Refresh Tables
-                } else {
-                    showQuickAlert(`❌ ${result.message}`, "red");
+                if (!res.ok) {
+                    throw new Error(result.message || 'Error updating stock');
                 }
+
+                showQuickAlert(result.message || "Stock Updated Successfully! ✅", "green");
+                document.getElementById('qsBarcode').value = '';
+                document.getElementById('qsQty').value = '';
+
+                // Fix 6: Performance Optimization (Local Update)
+                updateLocalStock(barcode, qty, type);
+
             } catch (err) {
-                showQuickAlert("❌ Network Error", "red");
+                console.error(err);
+                showQuickAlert(`❌ ${err.message || 'Network or Server Error'}`, "red");
             }
         }
 
+        // Fix 6: Performance Optimization logic function
+        function updateLocalStock(barcode, qtyStr, type) {
+            const numQty = Number(qtyStr);
+
+            // Find the item with earliest expiry (simulating backend logic) or first match
+            const targetIndex = fullInventory.findIndex(item => item.Barcode === barcode);
+
+            if (targetIndex !== -1) {
+                let currentStock = Number(fullInventory[targetIndex].Stock);
+                if (type === 'ADD') {
+                    fullInventory[targetIndex].Stock = currentStock + numQty;
+                } else if (type === 'REMOVE') {
+                    // Prevent going below zero locally
+                    fullInventory[targetIndex].Stock = Math.max(0, currentStock - numQty);
+                }
+                // Re-apply existing filters to render UI
+                applyFilters();
+            } else {
+                // Fallback: If item wasn't loaded in fullInventory, fetch from server
+                fetchStockData();
+            }
+        }
+
+        // Fix 2: Quick Stock Alert Classes (Clear timeout to prevent flashing)
         function showQuickAlert(msg, color) {
             const div = document.getElementById('quickAlert');
             div.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
             div.classList.add(color === 'red' ? 'bg-red-100' : 'bg-green-100', color === 'red' ? 'text-red-700' : 'text-green-700');
             div.innerText = msg;
-            setTimeout(() => div.classList.add('hidden'), 3000);
+
+            if (alertTimeout) clearTimeout(alertTimeout);
+            alertTimeout = setTimeout(() => div.classList.add('hidden'), 3000);
         }
 
         // Filter Logic
@@ -385,6 +419,7 @@
             processAndRenderData(filteredData);
         }
 
+        // Fix 3: Category Dropdown Update (Preserve selected value)
         function updateCategoryDropdown(categories) {
             const select = document.getElementById('categoryFilter');
             const currentVal = select.value;
@@ -392,7 +427,8 @@
             categories.forEach(c => {
                 select.innerHTML += `<option value="${c}">${c}</option>`;
             });
-            select.value = currentVal;
+            // If currentVal exists in categories, keep it
+            select.value = categories.has(currentVal) ? currentVal : 'ALL';
         }
 
         // Init
